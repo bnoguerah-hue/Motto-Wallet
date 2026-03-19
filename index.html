@@ -295,10 +295,6 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
     <div class="pg" id="pg-cats">
       <div style="padding-top:6px"></div>
       <div id="profileSection"></div>
-      <div class="sec">
-        <div class="sh"><span class="st">Mis categorías</span><button class="abtn" onclick="openCatModal()">+ Nueva</button></div>
-        <div id="catList"></div>
-      </div>
     </div>
 
   </div>
@@ -542,25 +538,17 @@ sb.auth.onAuthStateChange(async(event,session)=>{
 // DATA
 async function loadUserData(){
   const uid=currentUser.id;
-  const [cr,ar,tr]=await Promise.all([
-    sb.from('categories').select('*').eq('user_id',uid).order('ord'),
+  // Fixed categories - no DB needed
+  cats=[
+    {id:'crypto', name:'Criptomonedas', color:'#c9a96e', type:'crypto'},
+    {id:'stocks', name:'Acciones',       color:'#60a5fa', type:'stock'},
+    {id:'cash',   name:'Banco / Efectivo',color:'#4ade80', type:'manual'},
+    {id:'other',  name:'Otros activos',  color:'#f87171', type:'manual'},
+  ];
+  const [ar,tr]=await Promise.all([
     sb.from('assets').select('*').eq('user_id',uid).order('created_at'),
     sb.from('transactions').select('*').eq('user_id',uid).order('date',{ascending:false}),
   ]);
-  if(cr.data&&cr.data.length){
-    cats=cr.data.map(c=>({id:c.id,name:c.name,color:c.color,type:c.type}));
-  }else{
-    const defaults=[
-      {name:'Criptomonedas',color:'#c9a96e',type:'crypto'},
-      {name:'Acciones',color:'#60a5fa',type:'stock'},
-      {name:'Banco / Efectivo',color:'#4ade80',type:'manual'},
-      {name:'Otros activos',color:'#f87171',type:'manual'},
-    ];
-    for(let i=0;i<defaults.length;i++){
-      const {data}=await sb.from('categories').insert({user_id:uid,...defaults[i],ord:i}).select().single();
-      if(data)cats.push({id:data.id,...defaults[i]});
-    }
-  }
   assets=ar.data?ar.data.map(a=>({id:a.id,name:a.name,sym:a.sym,qty:a.qty,valUSD:a.val_usd,ticker:a.ticker,cat:a.cat_id,priceUSD:a.price_usd})):[];
   transactions=tr.data?tr.data.map(t=>({id:t.id,assetId:t.asset_id,type:t.type,qty:t.qty,priceUSD:t.price_usd,date:t.date,notes:t.notes})):[];
   renderAll();
@@ -893,12 +881,8 @@ function renderWinnersLosers(){
 }
 
 function renderCatPage(){
+  if(!document.getElementById('profileSection'))return;
   document.getElementById('profileSection').innerHTML=currentUser?`<div class="profile-card"><div class="avatar">${currentUser.email[0].toUpperCase()}</div><div class="profile-info"><div class="pname">${currentUser.email.split('@')[0]}</div><div class="pemail">${currentUser.email}</div></div><button class="logout-btn" onclick="doLogout()">Cerrar sesión</button></div>`:'';
-  document.getElementById('catList').innerHTML=cats.map(c=>{
-    const n=assets.filter(a=>a.cat===c.id).length;
-    const typeLabel={crypto:'cripto',stock:'acciones',manual:'manual'}[c.type]||c.type;
-    return`<div class="arow"><div class="aic" style="background:${c.color}22;color:${c.color};font-size:16px">◆</div><div class="ainf"><div class="an">${c.name}</div><div class="as2">${n} activo${n!==1?'s':''} · ${typeLabel}</div></div><div class="aacts"><button class="ib" onclick="openEditCat('${c.id}')">✎</button></div></div>`;
-  }).join('')||'<div class="empty">Sin categorías</div>';
 }
 
 // PAGES
