@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Motto"/>
+<title>Motto Wallet</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#0a0a0b;--surface:#111113;--s2:#18181b;--s3:#222226;--bd:rgba(255,255,255,0.07);--bd2:rgba(255,255,255,0.12);--text:#f4f4f5;--t2:#a1a1aa;--t3:#52525b;--ac:#c8f135;--acd:rgba(200,241,53,0.12);--gr:#4ade80;--grd:rgba(74,222,128,0.12);--rd:#f87171;--rdd:rgba(248,113,113,0.12);--am:#fbbf24;--bl:#60a5fa;--r:16px;--rs:10px;--fd:'DM Serif Display',serif;--fb:'DM Sans',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);font-size:15px;overflow-x:hidden;}
+body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;position:relative;}
+
+.tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,10,11,0.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:0.5px solid var(--bd);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,0);}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 8px;cursor:pointer;}
+.tab svg{width:22px;height:22px;stroke:var(--t3);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.15s;}
+.tab span{font-size:10px;color:var(--t3);letter-spacing:0.2px;transition:color 0.15s;}
+.tab.active svg{stroke:var(--ac);}
+.tab.active span{color:var(--ac);}
+
+.screen{display:none;flex-direction:column;padding-bottom:80px;min-height:100vh;}
+.screen.active{display:flex;animation:fi 0.2s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+.sh{padding:56px 20px 16px;display:flex;align-items:flex-end;justify-content:space-between;}
+.sh-title{font-family:var(--fd);font-size:26px;letter-spacing:-0.3px;}
+.sh-sub{font-size:12px;color:var(--t2);margin-top:2px;}
+.live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t3);padding-bottom:4px;}
+.ld{width:6px;height:6px;border-radius:50%;background:var(--gr);animation:lp 2s infinite;}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.hero{margin:0 16px 16px;background:linear-gradient(135deg,#111113 0%,#15151a 100%);border:0.5px solid var(--bd2);border-radius:24px;padding:22px;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;top:-80px;right:-80px;width:220px;height:220px;background:radial-gradient(circle,rgba(200,241,53,0.06) 0%,transparent 65%);pointer-events:none;}
+.hero-lbl{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;}
+.hero-amt{font-family:var(--fd);font-size:40px;letter-spacing:-1.5px;line-height:1;color:var(--text);}
+.hero-amt em{font-family:var(--fb);font-weight:300;font-size:20px;color:var(--t2);margin-right:2px;font-style:normal;}
+.hero-row{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.badge{font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;}
+.badge.pos{background:var(--grd);color:var(--gr);}
+.badge.neg{background:var(--rdd);color:var(--rd);}
+.hero-meta{font-size:12px;color:var(--t3);}
+.cpills{display:flex;gap:6px;margin-top:14px;}
+.cp{font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;border:0.5px solid var(--bd2);background:transparent;color:var(--t2);cursor:pointer;transition:all 0.15s;font-family:var(--fb);}
+.cp.active{background:var(--ac);color:#0a0a0b;border-color:var(--ac);}
+
+.sec{padding:0 16px;margin-bottom:20px;}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.sec-t{font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:0.8px;}
+.sec-a{font-size:12px;color:var(--ac);cursor:pointer;}
+
+.acard{background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--r);padding:13px 15px;margin-bottom:7px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:background 0.1s;}
+.acard:active{background:var(--s3);}
+.av{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0;}
+.ai{flex:1;min-width:0;}
+.an{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.as{font-size:11px;color:var(--t3);margin-top:1px;}
+.ar{text-align:right;}
+.av2{font-size:14px;font-weight:500;color:var(--text);}
+.ac2{font-size:11px;margin-top:2px;}
+.ac2.pos{color:var(--gr);}
+.ac2.neg{color:var(--rd);}
+.ac2.n{color:var(--t3);}
+
+.fab{position:fixed;bottom:82px;right:18px;width:46px;height:46px;background:var(--ac);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:#0a0a0b;font-weight:400;box-shadow:0 4px 20px rgba(200,241,53,0.25);z-index:99;transition:transform 0.12s;}
+.fab:active{transform:scale(0.92);}
+
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+.mc{background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);padding:13px;}
+.ml{font-size:11px;color:var(--t3);margin-bottom:5px;}
+.mv{font-size:19px;font-weight:500;color:var(--text);}
+.mv.pos{color:var(--gr);}
+.mv.neg{color:var(--rd);}
+.ms{font-size:11px;color:var(--t3);margin-top:2px;}
+
+.cc{background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--r);padding:15px;margin-bottom:10px;}
+.ct{font-size:11px;font-weight:500;color:var(--t2);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;}
+.cw{position:relative;width:100%;}
+
+.dl{display:flex;flex-direction:column;gap:7px;margin-top:12px;}
+.dr{display:flex;align-items:center;gap:8px;}
+.dd{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.dn{font-size:13px;color:var(--t2);flex:1;}
+.dp{font-size:12px;color:var(--t3);}
+.dv{font-size:13px;font-weight:500;color:var(--text);}
+
+.mr-row{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:0.5px solid var(--bd);}
+.mr-row:last-child{border:none;}
+.mr-rk{font-size:11px;color:var(--t3);width:16px;}
+.mr-nm{font-size:13px;color:var(--text);flex:1;}
+.mr-bw{width:70px;height:4px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.mr-bf{height:100%;border-radius:2px;}
+.mr-pct{font-size:12px;font-weight:500;min-width:48px;text-align:right;}
+
+.al-row{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.al-nm{font-size:13px;color:var(--t2);width:110px;flex-shrink:0;}
+.al-bw{flex:1;height:5px;background:var(--s3);border-radius:3px;overflow:hidden;}
+.al-bf{height:100%;border-radius:3px;transition:width 0.4s;}
+.al-pct{font-size:12px;color:var(--t3);min-width:34px;text-align:right;}
+
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:200;align-items:flex-end;}
+.ov.open{display:flex;}
+.ms2{background:var(--surface);border-radius:24px 24px 0 0;border-top:0.5px solid var(--bd2);padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 20px);width:100%;max-height:88vh;overflow-y:auto;animation:su 0.22s ease;}
+@keyframes su{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mh{width:34px;height:4px;background:var(--bd2);border-radius:2px;margin:0 auto 18px;}
+.mt{font-family:var(--fd);font-size:22px;margin-bottom:18px;}
+.tps{display:flex;gap:7px;margin-bottom:15px;}
+.tp{flex:1;padding:9px;border-radius:var(--rs);border:0.5px solid var(--bd2);background:transparent;color:var(--t2);font-size:13px;cursor:pointer;text-align:center;transition:all 0.12s;font-family:var(--fb);}
+.tp.active{background:var(--ac);color:#0a0a0b;border-color:var(--ac);font-weight:500;}
+.fl{font-size:11px;color:var(--t3);margin-bottom:5px;display:block;letter-spacing:0.3px;}
+.fi2{width:100%;background:var(--s2);border:0.5px solid var(--bd2);border-radius:var(--rs);color:var(--text);font-family:var(--fb);font-size:15px;padding:11px 13px;margin-bottom:12px;outline:none;transition:border-color 0.12s;}
+.fi2:focus{border-color:var(--ac);}
+.fi2.sel{appearance:none;}
+.bp{width:100%;background:var(--ac);color:#0a0a0b;border:none;border-radius:var(--rs);font-size:15px;font-weight:500;padding:13px;cursor:pointer;font-family:var(--fb);margin-top:4px;}
+.bd2b{width:100%;background:var(--rdd);color:var(--rd);border:none;border-radius:var(--rs);font-size:14px;padding:12px;cursor:pointer;font-family:var(--fb);margin-top:7px;}
+
+.empty{text-align:center;padding:28px;color:var(--t3);font-size:13px;}
+.mini-cw{margin:0 16px 16px;position:relative;height:90px;}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="sc-home">
+  <div class="sh">
+    <div>
+      <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Tu patrimonio</div>
+      <div style="font-family:var(--fd);font-size:16px;color:var(--t2);">Motto Wallet</div>
+    </div>
+    <div class="live"><div class="ld"></div>En vivo</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-lbl">Capital total</div>
+    <div class="hero-amt"><em id="hSym">A$</em><span id="hVal">—</span></div>
+    <div class="hero-row">
+      <div class="badge pos" id="hBadge">—</div>
+      <div class="hero-meta" id="hMeta">actualizando...</div>
+    </div>
+    <div class="cpills">
+      <button class="cp active" onclick="setCur('AUD')">AUD</button>
+      <button class="cp" onclick="setCur('USD')">USD</button>
+      <button class="cp" onclick="setCur('CLP')">CLP</button>
+      <button class="cp" onclick="setCur('EUR')">EUR</button>
+    </div>
+  </div>
+
+  <div class="mini-cw"><canvas id="miniC"></canvas></div>
+
+  <div class="sec">
+    <div class="sec-hd"><span class="sec-t">Cripto</span><span class="sec-a" onclick="openM('crypto')">+ Agregar</span></div>
+    <div id="lCrypto"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hd"><span class="sec-t">Efectivo y banco</span><span class="sec-a" onclick="openM('cash')">+ Agregar</span></div>
+    <div id="lCash"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hd"><span class="sec-t">Otros activos</span><span class="sec-a" onclick="openM('other')">+ Agregar</span></div>
+    <div id="lOther"></div>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="screen" id="sc-analytics">
+  <div class="sh"><div><div class="sh-title">Analytics</div><div class="sh-sub">Rendimiento de tu portafolio</div></div><div class="live"><div class="ld"></div>En vivo</div></div>
+  <div class="sec"><div class="mg" id="mg"></div></div>
+  <div class="sec">
+    <div class="cc">
+      <div class="ct">Distribución del capital</div>
+      <div class="cw" style="height:200px;"><canvas id="donut"></canvas></div>
+      <div class="dl" id="dLeg"></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="cc">
+      <div class="ct">Valor por activo</div>
+      <div class="cw" id="barW" style="height:180px;"><canvas id="barC"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="cc">
+      <div class="ct">Mayores movimientos 24h</div>
+      <div id="movers"></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="cc">
+      <div class="ct">Asignación por categoría</div>
+      <div id="alloc"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ASSETS -->
+<div class="screen" id="sc-assets">
+  <div class="sh"><div><div class="sh-title">Activos</div><div class="sh-sub">Ordenados por valor</div></div></div>
+  <div class="sec"><div id="lAll"></div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen" id="sc-settings">
+  <div class="sh"><div><div class="sh-title">Ajustes</div></div></div>
+  <div class="sec">
+    <div class="cc" style="margin-bottom:10px;">
+      <div class="ct">Moneda</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;">
+        <button class="tp" id="sAUD" onclick="setCur('AUD');updSet()">AUD</button>
+        <button class="tp" id="sUSD" onclick="setCur('USD');updSet()">USD</button>
+        <button class="tp" id="sCLP" onclick="setCur('CLP');updSet()">CLP</button>
+        <button class="tp" id="sEUR" onclick="setCur('EUR');updSet()">EUR</button>
+      </div>
+    </div>
+    <div class="cc" style="margin-bottom:10px;">
+      <div class="ct">Resumen</div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--bd);"><span style="font-size:13px;color:var(--t2);">Total activos</span><span style="font-size:13px;color:var(--text);" id="sCount">—</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--bd);"><span style="font-size:13px;color:var(--t2);">Cripto</span><span style="font-size:13px;color:var(--text);" id="sCCount">—</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;"><span style="font-size:13px;color:var(--t2);">Última actualización</span><span style="font-size:13px;color:var(--text);" id="sUpd">—</span></div>
+    </div>
+    <div class="cc">
+      <div style="font-family:var(--fd);font-size:26px;color:var(--ac);margin-bottom:4px;">Motto Wallet</div>
+      <div style="font-size:12px;color:var(--t3);">Tu patrimonio, en tiempo real.</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:6px;">Precios vía CoinGecko · Cambio vía Frankfurter</div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab active" onclick="go('home')" id="tab-home">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Inicio</span>
+  </div>
+  <div class="tab" onclick="go('analytics')" id="tab-analytics">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span>Analytics</span>
+  </div>
+  <div class="tab" onclick="go('assets')" id="tab-assets">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span>Activos</span>
+  </div>
+  <div class="tab" onclick="go('settings')" id="tab-settings">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Ajustes</span>
+  </div>
+</div>
+
+<div class="fab" id="fab" onclick="openM('crypto')">+</div>
+
+<!-- MODAL -->
+<div class="ov" id="ov" onclick="ovClick(event)">
+  <div class="ms2">
+    <div class="mh"></div>
+    <div class="mt" id="mTitle">Agregar activo</div>
+    <div class="tps">
+      <button class="tp active" id="tp-crypto" onclick="setMT('crypto')">Cripto</button>
+      <button class="tp" id="tp-cash" onclick="setMT('cash')">Banco</button>
+      <button class="tp" id="tp-other" onclick="setMT('other')">Otro</button>
+    </div>
+    <label class="fl">Nombre</label>
+    <input class="fi2" id="mName" placeholder="ej: Bitcoin, Cuenta BCI, Auto..."/>
+    <div id="cF">
+      <label class="fl">Símbolo cripto (BTC, ETH, SOL...)</label>
+      <input class="fi2" id="mSym" placeholder="BTC" style="text-transform:uppercase"/>
+      <label class="fl">Cantidad que tienes</label>
+      <input class="fi2" id="mQty" type="number" placeholder="0.05" step="any"/>
+    </div>
+    <div id="mF" style="display:none">
+      <label class="fl" id="vLbl">Valor en AUD</label>
+      <input class="fi2" id="mVal" type="number" placeholder="10000" step="any"/>
+    </div>
+    <button class="bp" onclick="save()">Guardar activo</button>
+    <button class="bd2b" id="delBtn" style="display:none" onclick="delAsset()">Eliminar activo</button>
+  </div>
+</div>
+
+<script>
+let cur='AUD',rates={AUD:1,USD:0.64,CLP:620,EUR:0.59},prices={},lastUpd=null,eid=null,mtype='crypto';
+let miniI=null,donutI=null,barI=null;
+const COLS={crypto:'#c8f135',cash:'#4ade80',other:'#fbbf24'};
+const CLBLS={crypto:'Cripto',cash:'Banco / Efectivo',other:'Otros activos'};
+const SM={BTC:'bitcoin',ETH:'ethereum',SOL:'solana',USDT:'tether',BNB:'binancecoin',ADA:'cardano',XRP:'ripple',DOT:'polkadot',DOGE:'dogecoin',AVAX:'avalanche-2',MATIC:'matic-network',LINK:'chainlink',LTC:'litecoin',UNI:'uniswap',ATOM:'cosmos',TRX:'tron',SHIB:'shiba-inu',NEAR:'near',ARB:'arbitrum',OP:'optimism',PEPE:'pepe'};
+
+let assets=[
+  {id:1,name:'Bitcoin',sym:'BTC',qty:0.05,cat:'crypto'},
+  {id:2,name:'Ethereum',sym:'ETH',qty:0.8,cat:'crypto'},
+  {id:3,name:'Cuenta bancaria',sym:null,qty:null,val:8000,cat:'cash'},
+  {id:4,name:'Efectivo',sym:null,qty:null,val:1200,cat:'cash'},
+  {id:5,name:'Auto',sym:null,qty:null,val:15000,cat:'other'},
+];
+let nid=10;
+
+function go(t){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('sc-'+t).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+  document.getElementById('fab').style.display=(t==='home'||t==='assets')?'flex':'none';
+  if(t==='analytics')rAn();
+  if(t==='assets')rAll();
+  if(t==='settings')updSet();
+}
+
+function setCur(c){
+  cur=c;
+  document.querySelectorAll('.cp').forEach(b=>b.classList.toggle('active',b.textContent===c));
+  document.getElementById('vLbl').textContent='Valor en '+c;
+  rAll2();
+}
+
+function gv(a){
+  if(a.cat==='crypto'&&a.sym){
+    const p=prices[a.sym.toUpperCase()];
+    if(p&&p.usd)return(p.usd/rates.USD)*rates.AUD*a.qty;
+    return 0;
+  }
+  return a.val||0;
+}
+
+function td(v){return v*rates[cur]/rates.AUD;}
+
+function fmt(v,d){
+  const x=td(v);
+  const s={AUD:'A$',USD:'$',CLP:'$',EUR:'€'}[cur];
+  if(cur==='CLP')return s+Math.round(x).toLocaleString('es-CL');
+  const dc=d!==undefined?d:(Math.abs(x)<1000?2:0);
+  return s+x.toLocaleString(undefined,{minimumFractionDigits:dc,maximumFractionDigits:dc});
+}
+
+function tot(){return assets.reduce((s,a)=>s+gv(a),0);}
+
+async function fetch2(){
+  const ca=assets.filter(a=>a.cat==='crypto'&&a.sym);
+  if(!ca.length){rAll2();return;}
+  const ids=[...new Set(ca.map(a=>SM[a.sym.toUpperCase()]||a.sym.toLowerCase()))].join(',');
+  try{
+    const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`);
+    const d=await r.json();
+    ca.forEach(a=>{
+      const k=SM[a.sym.toUpperCase()]||a.sym.toLowerCase();
+      if(d[k])prices[a.sym.toUpperCase()]={usd:d[k].usd,chg:d[k].usd_24h_change};
+    });
+    try{
+      const f=await fetch('https://api.frankfurter.app/latest?from=USD&to=AUD,CLP,EUR');
+      const fd=await f.json();
+      rates.AUD=fd.rates.AUD;rates.CLP=fd.rates.CLP;rates.EUR=fd.rates.EUR;
+    }catch(e){}
+  }catch(e){}
+  lastUpd=new Date();
+  rAll2();
+}
+
+function rAll2(){
+  const t=tot();
+  const s={AUD:'A$',USD:'$',CLP:'$',EUR:'€'}[cur];
+  document.getElementById('hSym').textContent=s;
+  const dv=td(t);
+  document.getElementById('hVal').textContent=cur==='CLP'?Math.round(dv).toLocaleString('es-CL'):dv.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+
+  const cChg=assets.filter(a=>a.cat==='crypto'&&a.sym).reduce((s,a)=>{
+    const p=prices[a.sym.toUpperCase()];
+    return p&&p.chg?s+(gv(a)*p.chg/100):s;
+  },0);
+  const cTot=assets.filter(a=>a.cat==='crypto').reduce((s,a)=>s+gv(a),0);
+  const b=document.getElementById('hBadge');
+  if(cTot>0&&Object.keys(prices).length){
+    const pct=cChg/t*100;
+    b.className='badge '+(pct>=0?'pos':'neg');
+    b.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';
+    document.getElementById('hMeta').textContent='cambio cripto 24h · '+fmt(Math.abs(cChg));
+  }else{
+    b.className='badge pos';b.textContent='— %';
+    document.getElementById('hMeta').textContent='actualizando precios...';
+  }
+
+  rMini();
+  rCatList('crypto','lCrypto');
+  rCatList('cash','lCash');
+  rCatList('other','lOther');
+  if(document.getElementById('sc-analytics').classList.contains('active'))rAn();
+  if(document.getElementById('sc-assets').classList.contains('active'))rAll();
+}
+
+function aHTML(a){
+  const v=gv(a);
+  const p=a.cat==='crypto'&&a.sym?prices[a.sym.toUpperCase()]:null;
+  const chg=p?`<div class="ac2 ${p.chg>=0?'pos':'neg'}">${p.chg>=0?'+':''}${p.chg.toFixed(2)}%</div>`:'<div class="ac2 n">—</div>';
+  const ic=(a.sym||a.name).substring(0,2).toUpperCase();
+  const bg={crypto:'rgba(200,241,53,0.13)',cash:'rgba(74,222,128,0.13)',other:'rgba(251,191,36,0.13)'};
+  const tc={crypto:'#c8f135',cash:'#4ade80',other:'#fbbf24'};
+  return`<div class="acard" onclick="openE(${a.id})">
+    <div class="av" style="background:${bg[a.cat]};color:${tc[a.cat]}">${ic}</div>
+    <div class="ai"><div class="an">${a.name}</div><div class="as">${a.sym?(a.sym.toUpperCase()+(a.qty?' · '+a.qty:'')):''}</div></div>
+    <div class="ar"><div class="av2">${v?fmt(v):'—'}</div>${chg}</div>
+  </div>`;
+}
+
+function rCatList(cat,id){
+  const el=document.getElementById(id);
+  const it=assets.filter(a=>a.cat===cat);
+  el.innerHTML=it.length?it.map(aHTML).join(''):'<div class="empty">Sin activos — agrega uno</div>';
+}
+
+function rAll(){
+  const el=document.getElementById('lAll');
+  if(!assets.length){el.innerHTML='<div class="empty">Sin activos aún</div>';return;}
+  el.innerHTML=[...assets].sort((a,b)=>gv(b)-gv(a)).map(aHTML).join('');
+}
+
+function rMini(){
+  const ctx=document.getElementById('miniC').getContext('2d');
+  const cats=['crypto','cash','other'];
+  const vals=cats.map(c=>Math.round(td(assets.filter(a=>a.cat===c).reduce((s,a)=>s+gv(a),0))));
+  if(miniI)miniI.destroy();
+  miniI=new Chart(ctx,{type:'bar',data:{labels:cats.map(c=>CLBLS[c]),datasets:[{data:vals,backgroundColor:cats.map(c=>COLS[c]+'30'),borderColor:cats.map(c=>COLS[c]),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(0)}}},scales:{x:{grid:{display:false},ticks:{color:'#52525b',font:{size:10}},border:{display:false}},y:{display:false}}}});
+}
+
+function rAn(){
+  const t=tot();
+  const cats=['crypto','cash','other'];
+  const cvs=cats.map(c=>assets.filter(a=>a.cat===c).reduce((s,a)=>s+gv(a),0));
+  const cChg=assets.filter(a=>a.cat==='crypto'&&a.sym).reduce((s,a)=>{
+    const p=prices[a.sym.toUpperCase()];return p&&p.chg?s+(gv(a)*p.chg/100):s;
+  },0);
+  const cTot=cvs[0];
+  const pct=cTot>0?cChg/cTot*100:0;
+  const mx=assets.length?assets.reduce((m,a)=>gv(a)>gv(m)?a:m,assets[0]):null;
+
+  document.getElementById('mg').innerHTML=`
+    <div class="mc"><div class="ml">Capital total</div><div class="mv">${fmt(t,0)}</div><div class="ms">${assets.length} activos</div></div>
+    <div class="mc"><div class="ml">Cambio cripto 24h</div><div class="mv ${cChg>=0?'pos':'neg'}">${cChg>=0?'+':''}${fmt(Math.abs(cChg),0)}</div><div class="ms">${pct>=0?'+':''}${pct.toFixed(2)}%</div></div>
+    <div class="mc"><div class="ml">Mayor activo</div><div class="mv" style="font-size:14px;">${mx?mx.name:'—'}</div><div class="ms">${mx?fmt(gv(mx),0):'—'}</div></div>
+    <div class="mc"><div class="ml">Solo cripto</div><div class="mv">${fmt(cTot,0)}</div><div class="ms">${t>0?(cTot/t*100).toFixed(0):0}% del total</div></div>`;
+
+  const ctx2=document.getElementById('donut').getContext('2d');
+  if(donutI)donutI.destroy();
+  donutI=new Chart(ctx2,{type:'doughnut',data:{labels:cats.map(c=>CLBLS[c]),datasets:[{data:cvs.map(v=>parseFloat(td(v).toFixed(0))),backgroundColor:cats.map(c=>COLS[c]+'40'),borderColor:cats.map(c=>COLS[c]),borderWidth:1.5,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(0)}}}}});
+
+  document.getElementById('dLeg').innerHTML=cats.map((c,i)=>{
+    const p=t>0?(cvs[i]/t*100).toFixed(1):'0';
+    return`<div class="dr"><div class="dd" style="background:${COLS[c]}"></div><div class="dn">${CLBLS[c]}</div><div class="dp">${p}%</div><div class="dv">${fmt(cvs[i],0)}</div></div>`;
+  }).join('');
+
+  const sorted=[...assets].sort((a,b)=>gv(b)-gv(a)).slice(0,8);
+  document.getElementById('barW').style.height=Math.max(150,sorted.length*36+50)+'px';
+  const ctx3=document.getElementById('barC').getContext('2d');
+  if(barI)barI.destroy();
+  barI=new Chart(ctx3,{type:'bar',data:{labels:sorted.map(a=>a.name),datasets:[{data:sorted.map(a=>parseFloat(td(gv(a)).toFixed(0))),backgroundColor:sorted.map(a=>COLS[a.cat]+'50'),borderColor:sorted.map(a=>COLS[a.cat]),borderWidth:1.5,borderRadius:5}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(0)}}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#52525b',font:{size:10}},border:{display:false}},y:{grid:{display:false},ticks:{color:'#a1a1aa',font:{size:11}},border:{display:false}}}}});
+
+  const mvrs=assets.filter(a=>a.cat==='crypto'&&a.sym&&prices[a.sym.toUpperCase()])
+    .map(a=>({name:a.name,sym:a.sym,chg:prices[a.sym.toUpperCase()].chg}))
+    .sort((a,b)=>Math.abs(b.chg)-Math.abs(a.chg));
+  const mx2=mvrs.length?Math.max(...mvrs.map(m=>Math.abs(m.chg))):1;
+  document.getElementById('movers').innerHTML=mvrs.length
+    ?mvrs.map((m,i)=>`<div class="mr-row"><div class="mr-rk">${i+1}</div><div class="mr-nm">${m.name} <span style="color:var(--t3);font-size:10px;">${m.sym}</span></div><div class="mr-bw"><div class="mr-bf" style="width:${Math.abs(m.chg)/mx2*100}%;background:${m.chg>=0?'var(--gr)':'var(--rd)'}"></div></div><div class="mr-pct" style="color:${m.chg>=0?'var(--gr)':'var(--rd)'}">${m.chg>=0?'+':''}${m.chg.toFixed(2)}%</div></div>`).join('')
+    :'<div class="empty">Sin datos de precio disponibles</div>';
+
+  document.getElementById('alloc').innerHTML=cats.map((c,i)=>{
+    const p=t>0?cvs[i]/t*100:0;
+    return`<div class="al-row"><div class="al-nm">${CLBLS[c]}</div><div class="al-bw"><div class="al-bf" style="width:${p.toFixed(1)}%;background:${COLS[c]}"></div></div><div class="al-pct">${p.toFixed(0)}%</div></div>`;
+  }).join('');
+}
+
+function openM(cat){
+  eid=null;mtype=cat||'crypto';
+  ['mName','mSym','mQty','mVal'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mTitle').textContent='Agregar activo';
+  document.querySelector('.bp').textContent='Guardar activo';
+  document.getElementById('delBtn').style.display='none';
+  setMT(mtype);
+  document.getElementById('ov').classList.add('open');
+}
+
+function openE(id){
+  const a=assets.find(x=>x.id===id);if(!a)return;
+  eid=id;setMT(a.cat);
+  document.getElementById('mName').value=a.name;
+  document.getElementById('mSym').value=a.sym||'';
+  document.getElementById('mQty').value=a.qty||'';
+  document.getElementById('mVal').value=a.val?Math.round(td(a.val)):'';
+  document.getElementById('mTitle').textContent='Editar activo';
+  document.querySelector('.bp').textContent='Actualizar';
+  document.getElementById('delBtn').style.display='block';
+  document.getElementById('ov').classList.add('open');
+}
+
+function setMT(t){
+  mtype=t;
+  ['crypto','cash','other'].forEach(x=>document.getElementById('tp-'+x).classList.toggle('active',x===t));
+  document.getElementById('cF').style.display=t==='crypto'?'block':'none';
+  document.getElementById('mF').style.display=t!=='crypto'?'block':'none';
+}
+
+function ovClick(e){if(e.target===document.getElementById('ov'))closeM();}
+function closeM(){document.getElementById('ov').classList.remove('open');eid=null;}
+
+function save(){
+  const name=document.getElementById('mName').value.trim();
+  if(!name){alert('Ingresa un nombre');return;}
+  if(eid){
+    const a=assets.find(x=>x.id===eid);
+    a.name=name;a.cat=mtype;
+    if(mtype==='crypto'){a.sym=document.getElementById('mSym').value.trim().toUpperCase();a.qty=parseFloat(document.getElementById('mQty').value)||0;a.val=null;}
+    else{const v=parseFloat(document.getElementById('mVal').value)||0;a.val=v/rates[cur]*rates.AUD;a.sym=null;a.qty=null;}
+  }else{
+    if(mtype==='crypto'){
+      const sym=document.getElementById('mSym').value.trim().toUpperCase();
+      if(!sym){alert('Ingresa el símbolo');return;}
+      assets.push({id:nid++,name,sym,qty:parseFloat(document.getElementById('mQty').value)||0,cat:'crypto'});
+    }else{
+      const v=parseFloat(document.getElementById('mVal').value)||0;
+      assets.push({id:nid++,name,sym:null,qty:null,val:v/rates[cur]*rates.AUD,cat:mtype});
+    }
+  }
+  closeM();fetch2();
+}
+
+function delAsset(){
+  if(!eid)return;
+  if(!confirm('¿Eliminar este activo?'))return;
+  assets=assets.filter(a=>a.id!==eid);
+  closeM();rAll2();rAll();
+}
+
+function updSet(){
+  ['AUD','USD','CLP','EUR'].forEach(c=>document.getElementById('s'+c).classList.toggle('active',c===cur));
+  document.getElementById('sCount').textContent=assets.length;
+  document.getElementById('sCCount').textContent=assets.filter(a=>a.cat==='crypto').length;
+  document.getElementById('sUpd').textContent=lastUpd?lastUpd.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}):'—';
+}
+
+fetch2();
+setInterval(fetch2,60000);
+</script>
+</body>
+</html>
