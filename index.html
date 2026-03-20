@@ -139,6 +139,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
 .avatar{width:44px;height:44px;border-radius:50%;background:var(--gdim);border:.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);flex-shrink:0}
 .export-btn{margin-left:auto;font-size:11px;padding:6px 12px;border-radius:99px;border:.5px solid var(--bd2);background:transparent;color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
 .export-btn:hover{border-color:var(--gold);color:var(--gold)}
+.swatch{width:22px;height:22px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.swatch.on{border-color:white;transform:scale(1.15)}
 @media(max-width:380px){.hval{font-size:28px}.hmet{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -234,6 +236,10 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
       <span id="lbl-storage-info">Tus datos se guardan directamente en este dispositivo. Para tener tus datos en otro dispositivo usa el botón Exportar.</span>
     </div>
     <div class="sec">
+      <div class="sh"><span class="st" id="lbl-my-cats">Mis categorías</span><button class="abtn" onclick="openCatModal()">+ Nueva</button></div>
+      <div id="catList"></div>
+    </div>
+    <div class="sec">
       <div class="sh"><span class="st" id="lbl-danger">Zona peligrosa</span></div>
       <button class="mbtn mbtn-d" style="width:100%" onclick="clearAllData()" id="clearBtn">Borrar todos los datos</button>
     </div>
@@ -314,6 +320,33 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
   </div>
 </div>
 
+<!-- CAT MODAL -->
+<div class="ovl" id="ovl-cat" onclick="closeOvl('cat',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="catModalTitle">Nueva categoría</div>
+    <label id="lbl-cat-name">Nombre</label>
+    <input type="text" id="cName" placeholder="ej: Acciones USA, Inmuebles..."/>
+    <label id="lbl-cat-name-en">Nombre en inglés (opcional)</label>
+    <input type="text" id="cNameEn" placeholder="e.g. US Stocks, Real Estate..."/>
+    <label id="lbl-cat-color">Color</label>
+    <div class="swatches" id="swatches" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
+    <label id="lbl-cat-type">Tipo de activos</label>
+    <select id="cType">
+      <option value="manual">Valor manual (inmuebles, bonos...)</option>
+      <option value="crypto">Criptomonedas con precio en vivo</option>
+      <option value="stock">Acciones con precio en vivo</option>
+    </select>
+    <div class="mbtns">
+      <button class="mbtn mbtn-c" id="cancelCatBtn" onclick="closeOvl('cat')">Cancelar</button>
+      <button class="mbtn mbtn-s" id="saveCatBtn" onclick="saveCat()">Guardar</button>
+    </div>
+    <div id="deleteCatRow" style="display:none;margin-top:8px">
+      <button class="mbtn mbtn-d" style="width:100%" id="deleteCatBtn" onclick="confirmDeleteCat()">Eliminar categoría</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -359,12 +392,14 @@ const STOCKS=[
   {sym:'TTE',name:'TotalEnergies',ex:'NYSE'},{sym:'NESN',name:'Nestlé',ex:'SWX'},
 ];
 const PALETTE=['#c9a96e','#4ade80','#60a5fa','#f87171','#a78bfa','#34d399','#fb923c','#f472b6','#38bdf8','#facc15','#e879f9','#94a3b8'];
-const CATS=[
-  {id:'crypto',name:'Criptomonedas',color:'#c9a96e',type:'crypto'},
-  {id:'stocks',name:'Acciones',color:'#60a5fa',type:'stock'},
-  {id:'cash',name:'Banco / Efectivo',color:'#4ade80',type:'manual'},
-  {id:'other',name:'Otros activos',color:'#f87171',type:'manual'},
+const DEFAULT_CATS=[
+  {id:'crypto',es:'Criptomonedas',en:'Cryptocurrencies',color:'#c9a96e',type:'crypto'},
+  {id:'stocks',es:'Acciones',en:'Stocks',color:'#60a5fa',type:'stock'},
+  {id:'cash',es:'Banco / Efectivo',en:'Bank / Cash',color:'#4ade80',type:'manual'},
+  {id:'other',es:'Otros activos',en:'Other assets',color:'#f87171',type:'manual'},
 ];
+let userCats=[];
+function getCats(){return userCats.map(c=>({...c,name:c[lang]||c.es||c.name}));}
 
 // ── STATE ───────────────────────────────────────────────────────────────────
 let cur='USD',rates={USD:1,AUD:1.55,CLP:950,EUR:0.92};
@@ -388,7 +423,9 @@ const TR={
     byCat:'Por categoría',composition:'Composición',winners:'Ganadores 24h',losers:'Perdedores 24h',
     noLive:'Sin activos con precio en vivo',noWinners:'Sin ganadores hoy',noLosers:'Sin perdedores hoy',
     back:'← Volver',currentPrice:'Precio actual',avgCost:'Precio prom. compra',pnlTotal:'P&L total',
-    export:'Exportar',storageInfo:'Tus datos se guardan directamente en este dispositivo.',
+    addAssetTitle:'Agregar activo',editAssetTitle:'Editar activo',
+    newTxTitle:'Nueva transacción',editTxTitle:'Editar transacción',
+    export:'Exportar',myCats:'Mis categorías',catName:'Nombre',catNameEn:'Nombre en inglés (opcional)',catColor:'Color',catType:'Tipo de activos',storageInfo:'Tus datos se guardan directamente en este dispositivo.',
     danger:'Zona peligrosa',clearAll:'Borrar todos los datos',live:'en vivo',
     inCrypto:'En cripto',portfolio:'del portafolio',assetsCount:'Activos',
     autoRefresh:'auto cada 45s',
@@ -404,7 +441,9 @@ const TR={
     byCat:'By category',composition:'Composition',winners:'Top gainers 24h',losers:'Top losers 24h',
     noLive:'No assets with live price',noWinners:'No winners today',noLosers:'No losers today',
     back:'← Back',currentPrice:'Current price',avgCost:'Avg. buy price',pnlTotal:'Total P&L',
-    export:'Export',storageInfo:'Your data is saved directly on this device.',
+    addAssetTitle:'Add asset',editAssetTitle:'Edit asset',
+    newTxTitle:'New transaction',editTxTitle:'Edit transaction',
+    export:'Export',myCats:'My categories',catName:'Name',catNameEn:'Name in English (optional)',catColor:'Color',catType:'Asset type',storageInfo:'Your data is saved directly on this device.',
     danger:'Danger zone',clearAll:'Delete all data',live:'live',
     inCrypto:'In crypto',portfolio:'of portfolio',assetsCount:'Assets',
     autoRefresh:'auto every 45s',
@@ -437,6 +476,22 @@ function applyTranslations(){
   const cancelAsset=document.getElementById('cancelAssetBtn');if(cancelAsset)cancelAsset.textContent=t('cancel');
   const cancelTx=document.getElementById('cancelTxBtn');if(cancelTx)cancelTx.textContent=t('cancel');
   const exportBtn=document.getElementById('exportBtn');if(exportBtn)exportBtn.textContent=t('export');
+  const mcs=document.getElementById('mCryptoSearch');if(mcs)mcs.placeholder=lang==='es'?'Bitcoin, ETH, Solana...':'Bitcoin, ETH, Solana...';
+  const mss=document.getElementById('mStockSearch');if(mss)mss.placeholder=lang==='es'?'Apple, AAPL, ASX:BHP...':'Apple, AAPL, ASX:BHP...';
+  const mn=document.getElementById('mName');if(mn)mn.placeholder=lang==='es'?'ej: Depto Santiago, Cuenta BCI...':'e.g. Apartment, Bank account...';
+  // Update live timestamp text
+  const hSubEl=document.getElementById('hSub');
+  if(hSubEl&&hSubEl.textContent.includes(':')){
+    const timePart=hSubEl.textContent.split(' · ')[0];
+    hSubEl.textContent=timePart+' · '+t('autoRefresh');
+  }
+  const saveAssetBtnEl=document.getElementById('saveAssetBtn');
+  const saveTxBtnEl=document.getElementById('saveTxBtn');
+  // Update modal titles based on editing state
+  const amt=document.getElementById('aModalTitle');
+  if(amt)amt.textContent=amt.dataset.editing?t('editAssetTitle'):t('addAssetTitle');
+  const tmt=document.getElementById('txModalTitle');
+  if(tmt&&!tmt.textContent.includes('·'))tmt.textContent=t('newTxTitle');
   const clearBtn=document.getElementById('clearBtn');if(clearBtn)clearBtn.textContent=t('clearAll');
   const optBuy=document.getElementById('opt-buy');if(optBuy)optBuy.textContent=t('buy');
   const optSell=document.getElementById('opt-sell');if(optSell)optSell.textContent=t('sell');
@@ -446,12 +501,15 @@ function applyTranslations(){
 function saveData(){
   localStorage.setItem('motto_assets',JSON.stringify(assets));
   localStorage.setItem('motto_transactions',JSON.stringify(transactions));
+  localStorage.setItem('motto_cats',JSON.stringify(userCats));
   localStorage.setItem('motto_cur',cur);
   localStorage.setItem('motto_lang',lang);
 }
 function loadData(){
   try{assets=JSON.parse(localStorage.getItem('motto_assets'))||[];}catch(e){assets=[];}
   try{transactions=JSON.parse(localStorage.getItem('motto_transactions'))||[];}catch(e){transactions=[];}
+  try{userCats=JSON.parse(localStorage.getItem('motto_cats'))||[];}catch(e){userCats=[];}
+  if(!userCats.length)userCats=JSON.parse(JSON.stringify(DEFAULT_CATS));
   cur=localStorage.getItem('motto_cur')||'USD';
   lang=localStorage.getItem('motto_lang')||'es';
   document.querySelectorAll('.cb').forEach(b=>{if(['USD','AUD','CLP','EUR'].includes(b.textContent))b.classList.toggle('on',b.textContent===cur);});
@@ -473,7 +531,7 @@ function fmt(v){
 }
 
 // ── VALUE ────────────────────────────────────────────────────────────────────
-function getCat(a){return CATS.find(c=>c.id===a.cat);}
+function getCat(a){return getCats().find(c=>c.id===a.cat);}
 function getValUSD(a){
   const cat=getCat(a);
   if(cat?.type==='crypto'&&a.sym){const p=cryptoPrices[a.sym.toUpperCase()];if(p)return p.usd*(a.qty||0);}
@@ -528,6 +586,7 @@ function renderAll(){
   renderHero(total);renderAllocBar(total);renderDonut(total);
   renderHomeSecs();renderAssetPage();renderAnalytics(total);
   if(currentDetailAssetId)renderDetail(currentDetailAssetId);
+  renderCatList();
   // update profile sub
   const sub=document.getElementById('profileSub');
   if(sub)sub.textContent=`${assets.length} ${lang==='es'?'activos guardados':'saved assets'}`;
@@ -552,16 +611,16 @@ function renderHero(total){
 }
 
 function renderAllocBar(total){
-  document.getElementById('abar').innerHTML=CATS.map(c=>{const v=assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="aseg" style="width:${total?(v/total*100).toFixed(1):0}%;background:${c.color}"></div>`;}).join('');
-  document.getElementById('aleg').innerHTML=CATS.map(c=>{const v=assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="ai"><div class="ad" style="background:${c.color}"></div>${lang==='es'?c.name:c.name} <strong style="color:var(--tx)">${total?(v/total*100).toFixed(0):0}%</strong></div>`;}).join('');
+  document.getElementById('abar').innerHTML=getCats().map(c=>{const v=assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="aseg" style="width:${total?(v/total*100).toFixed(1):0}%;background:${c.color}"></div>`;}).join('');
+  document.getElementById('aleg').innerHTML=getCats().map(c=>{const v=assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="ai"><div class="ad" style="background:${c.color}"></div>${lang==='es'?c.name:c.name} <strong style="color:var(--tx)">${total?(v/total*100).toFixed(0):0}%</strong></div>`;}).join('');
 }
 
 function renderDonut(total){
-  const vals=CATS.map(c=>assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a)*rates[cur],0));
+  const vals=getCats().map(c=>assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a)*rates[cur],0));
   const ctx=document.getElementById('donut').getContext('2d');
   if(charts.donut)charts.donut.destroy();
-  charts.donut=new Chart(ctx,{type:'doughnut',data:{labels:CATS.map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:CATS.map(c=>c.color),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(vals[ctx.dataIndex]/rates[cur])}}},cutout:'70%'}});
-  document.getElementById('donutLeg').innerHTML=CATS.map(c=>`<div class="ai"><div class="ad" style="background:${c.color}"></div><span style="color:var(--tx2)">${c.name}</span></div>`).join('');
+  charts.donut=new Chart(ctx,{type:'doughnut',data:{labels:getCats().map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:getCats().map(c=>c.color),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(vals[ctx.dataIndex]/rates[cur])}}},cutout:'70%'}});
+  document.getElementById('donutLeg').innerHTML=getCats().map(c=>`<div class="ai"><div class="ad" style="background:${c.color}"></div><span style="color:var(--tx2)">${c.name}</span></div>`).join('');
 }
 
 function makeRow(a){
@@ -579,11 +638,11 @@ function makeRow(a){
 }
 
 function renderHomeSecs(){
-  document.getElementById('homeSecs').innerHTML=CATS.map(c=>`<div class="sec"><div class="sh"><span class="st">${c.name}</span><button class="abtn" onclick="openAddAsset('${c.id}')">${t('add')}</button></div>${assets.filter(a=>a.cat===c.id).slice(0,3).map(a=>makeRow(a)).join('')||`<div class="empty">${t('noAssets')}</div>`}</div>`).join('');
+  document.getElementById('homeSecs').innerHTML=getCats().map(c=>`<div class="sec"><div class="sh"><span class="st">${c.name}</span><button class="abtn" onclick="openAddAsset('${c.id}')">${t('add')}</button></div>${assets.filter(a=>a.cat===c.id).slice(0,3).map(a=>makeRow(a)).join('')||`<div class="empty">${t('noAssets')}</div>`}</div>`).join('');
 }
 
 function renderAssetPage(){
-  document.getElementById('assetSecs').innerHTML=CATS.map(c=>`<div class="sec"><div class="sh"><span class="st">${c.name}</span><button class="abtn" onclick="openAddAsset('${c.id}')">${t('add')}</button></div>${assets.filter(a=>a.cat===c.id).map(a=>makeRow(a)).join('')||`<div class="empty">${t('noAssets')}</div>`}</div>`).join('');
+  document.getElementById('assetSecs').innerHTML=getCats().map(c=>`<div class="sec"><div class="sh"><span class="st">${c.name}</span><button class="abtn" onclick="openAddAsset('${c.id}')">${t('add')}</button></div>${assets.filter(a=>a.cat===c.id).map(a=>makeRow(a)).join('')||`<div class="empty">${t('noAssets')}</div>`}</div>`).join('');
 }
 
 // ── DETAIL ───────────────────────────────────────────────────────────────────
@@ -631,7 +690,7 @@ function renderAnalytics(total){
   document.getElementById('anTotal').textContent=fmt(total);
   document.getElementById('anTsub').textContent=`${assets.length} ${lang==='es'?'activos':'assets'}`;
   document.getElementById('anCnt').textContent=assets.length;
-  document.getElementById('anCntS').textContent=CATS.map(c=>{const n=assets.filter(a=>a.cat===c.id).length;return n?`${n} ${c.name}`:null;}).filter(Boolean).join(' · ')||'—';
+  document.getElementById('anCntS').textContent=getCats().map(c=>{const n=assets.filter(a=>a.cat===c.id).length;return n?`${n} ${c.name}`:null;}).filter(Boolean).join(' · ')||'—';
   const lAs=assets.filter(a=>{const c=getCat(a);return(c?.type==='crypto'&&cryptoPrices[a.sym?.toUpperCase()])||(c?.type==='stock'&&stockPrices[a.sym?.toUpperCase()]);});
   let pnl=0;lAs.forEach(a=>{const chg=getChange(a)||0;const v=getValUSD(a);pnl+=v-v/(1+chg/100);});
   const pe=document.getElementById('anPnl');pe.textContent=(pnl>=0?'+':'')+fmt(pnl);pe.className='mv '+(pnl>=0?'pos':'neg');
@@ -641,11 +700,11 @@ function renderAnalytics(total){
 }
 
 function renderBarChart(){
-  const vals=CATS.map(c=>parseFloat((assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0)*rates[cur]).toFixed(0)));
+  const vals=getCats().map(c=>parseFloat((assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0)*rates[cur]).toFixed(0)));
   const s={USD:'$',AUD:'A$',CLP:'$',EUR:'€'}[cur];
   const ctx=document.getElementById('barC').getContext('2d');
   if(charts.bar)charts.bar.destroy();
-  charts.bar=new Chart(ctx,{type:'bar',data:{labels:CATS.map(c=>c.name),datasets:[{data:vals,backgroundColor:CATS.map(c=>c.color),borderRadius:6,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${s}${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:'#555550',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#555550',font:{size:10},callback:v=>s+v.toLocaleString()}}}}});
+  charts.bar=new Chart(ctx,{type:'bar',data:{labels:getCats().map(c=>c.name),datasets:[{data:vals,backgroundColor:getCats().map(c=>c.color),borderRadius:6,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${s}${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:'#555550',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#555550',font:{size:10},callback:v=>s+v.toLocaleString()}}}}});
 }
 
 function renderPieChart(){
@@ -683,7 +742,7 @@ function showPg(name){
 function openAddAsset(catId){
   editingAssetId=null;selCryptoSym='';selStockSym='';
   modalCatId=catId||'crypto';
-  document.getElementById('aModalTitle').textContent=lang==='es'?'Agregar activo':'Add asset';
+  const amtEl=document.getElementById('aModalTitle');amtEl.textContent=t('addAssetTitle');delete amtEl.dataset.editing;
   document.getElementById('mCryptoSearch').value='';document.getElementById('mCryptoSym').value='';
   document.getElementById('mStockSearch').value='';document.getElementById('mStockSym').value='';
   document.getElementById('mQty').value='';document.getElementById('mStockQty').value='';
@@ -697,7 +756,7 @@ function openAddAsset(catId){
 function openEditAsset(id){
   const a=assets.find(x=>x.id===id);if(!a)return;
   editingAssetId=id;modalCatId=a.cat;
-  document.getElementById('aModalTitle').textContent=lang==='es'?'Editar activo':'Edit asset';
+  const amtEl=document.getElementById('aModalTitle');amtEl.textContent=t('editAssetTitle');amtEl.dataset.editing='1';
   document.getElementById('deleteAssetRow').style.display='block';
   document.getElementById('saveAssetBtn').textContent=t('update');
   document.getElementById('deleteAssetBtn').textContent=t('deleteAsset');
@@ -711,21 +770,21 @@ function openEditAsset(id){
 
 function buildCatTabs(activeCatId){
   modalCatId=activeCatId;
-  document.getElementById('catTabsModal').innerHTML=CATS.map(c=>`<button class="ctab ${c.id===activeCatId?'on':''}" onclick="setModalCat('${c.id}')">${c.name}</button>`).join('');
+  document.getElementById('catTabsModal').innerHTML=getCats().map(c=>`<button class="ctab ${c.id===activeCatId?'on':''}" onclick="setModalCat('${c.id}')">${c.name}</button>`).join('');
   updateModalFields();
 }
 
-function setModalCat(id){modalCatId=id;document.querySelectorAll('#catTabsModal .ctab').forEach((b,i)=>b.classList.toggle('on',CATS[i]?.id===id));updateModalFields();}
+function setModalCat(id){modalCatId=id;document.querySelectorAll('#catTabsModal .ctab').forEach((b,i)=>b.classList.toggle('on',getCats()[i]?.id===id));updateModalFields();}
 
 function updateModalFields(){
-  const cat=CATS.find(c=>c.id===modalCatId);
+  const cat=getCats().find(c=>c.id===modalCatId);
   document.getElementById('cryptoF').style.display=cat?.type==='crypto'?'block':'none';
   document.getElementById('stockF').style.display=cat?.type==='stock'?'block':'none';
   document.getElementById('manualF').style.display=cat?.type==='manual'?'block':'none';
 }
 
 function saveAsset(){
-  const cat=CATS.find(c=>c.id===modalCatId);if(!cat)return;
+  const cat=getCats().find(c=>c.id===modalCatId);if(!cat)return;
   let newAsset={id:editingAssetId||Date.now().toString(),cat:modalCatId};
   if(cat.type==='crypto'){
     if(!selCryptoSym){showToast(lang==='es'?'Selecciona una cripto':'Select a crypto');return;}
@@ -794,7 +853,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('.acwrap')){document.
 function openAddTx(assetId){
   txAssetId=assetId;editingTxId=null;
   const a=assets.find(x=>x.id===assetId);
-  document.getElementById('txModalTitle').textContent=`${lang==='es'?'Nueva transacción':'New transaction'} · ${a?.name||''}`;
+  document.getElementById('txModalTitle').textContent=`${t('newTxTitle')} · ${a?.name||''}`;
   document.getElementById('txType').value='buy';
   document.getElementById('txQty').value='';document.getElementById('txPrice').value='';
   document.getElementById('txNotes').value='';document.getElementById('txDate').value=new Date().toISOString().split('T')[0];
@@ -808,7 +867,7 @@ function openEditTx(id){
   const tx=transactions.find(x=>x.id===id);if(!tx)return;
   const a=assets.find(x=>x.id===tx.assetId);
   editingTxId=id;txAssetId=tx.assetId;
-  document.getElementById('txModalTitle').textContent=`${lang==='es'?'Editar transacción':'Edit transaction'} · ${a?.name||''}`;
+  document.getElementById('txModalTitle').textContent=`${t('editTxTitle')} · ${a?.name||''}`;
   document.getElementById('txType').value=tx.type;document.getElementById('txQty').value=tx.qty;
   document.getElementById('txPrice').value=tx.priceUSD;document.getElementById('txDate').value=tx.date;
   document.getElementById('txNotes').value=tx.notes||'';
@@ -859,11 +918,84 @@ function clearAllData(){
   showToast(lang==='es'?'Datos borrados':'Data cleared');
 }
 
+// ── CAT MODAL ─────────────────────────────────────────────────────────────────
+let editingCatId=null,selCatColor='#c9a96e';
+
+function renderCatList(){
+  const el=document.getElementById('catList');
+  if(!el)return;
+  el.innerHTML=getCats().map(c=>{
+    const n=assets.filter(a=>a.cat===c.id).length;
+    const typeLabel={crypto:lang==='es'?'cripto':'crypto',stock:lang==='es'?'acciones':'stocks',manual:lang==='es'?'manual':'manual'}[c.type]||c.type;
+    return`<div class="arow"><div class="aic" style="background:${c.color}22;color:${c.color};font-size:16px">◆</div><div class="ainf"><div class="an">${c.name}</div><div class="as2">${n} ${lang==='es'?'activo':'asset'}${n!==1?'s':''} · ${typeLabel}</div></div><div class="aacts"><button class="ib" onclick="openEditCat('${c.id}')">✎</button></div></div>`;
+  }).join('')||`<div class="empty">${lang==='es'?'Sin categorías':'No categories'}</div>`;
+}
+
+function openCatModal(){
+  editingCatId=null;selCatColor=PALETTE[userCats.length%PALETTE.length];
+  document.getElementById('catModalTitle').textContent=lang==='es'?'Nueva categoría':'New category';
+  document.getElementById('cName').value='';document.getElementById('cNameEn').value='';
+  document.getElementById('cType').value='manual';
+  document.getElementById('deleteCatRow').style.display='none';
+  document.getElementById('saveCatBtn').textContent=t('save');
+  document.getElementById('cancelCatBtn').textContent=t('cancel');
+  buildSwatches();
+  document.getElementById('ovl-cat').classList.add('on');
+}
+
+function openEditCat(id){
+  const c=userCats.find(x=>x.id===id);if(!c)return;
+  editingCatId=id;selCatColor=c.color;
+  document.getElementById('catModalTitle').textContent=lang==='es'?'Editar categoría':'Edit category';
+  document.getElementById('cName').value=c.es||c.name||'';
+  document.getElementById('cNameEn').value=c.en||'';
+  document.getElementById('cType').value=c.type||'manual';
+  document.getElementById('deleteCatRow').style.display='block';
+  document.getElementById('saveCatBtn').textContent=t('update');
+  document.getElementById('cancelCatBtn').textContent=t('cancel');
+  document.getElementById('deleteCatBtn').textContent=lang==='es'?'Eliminar categoría':'Delete category';
+  buildSwatches();
+  document.getElementById('ovl-cat').classList.add('on');
+}
+
+function buildSwatches(){
+  document.getElementById('swatches').innerHTML=PALETTE.map(col=>`<div class="swatch ${col===selCatColor?'on':''}" style="background:${col}" onclick="pickColor('${col}')"></div>`).join('');
+}
+function pickColor(col){selCatColor=col;buildSwatches();}
+
+function saveCat(){
+  const name=document.getElementById('cName').value.trim();
+  const nameEn=document.getElementById('cNameEn').value.trim();
+  const type=document.getElementById('cType').value;
+  if(!name){showToast(lang==='es'?'Ingresa un nombre':'Enter a name');return;}
+  if(editingCatId){
+    const c=userCats.find(x=>x.id===editingCatId);
+    c.es=name;c.en=nameEn||name;c.color=selCatColor;c.type=type;c.name=name;
+  }else{
+    const id='cat_'+Date.now();
+    userCats.push({id,es:name,en:nameEn||name,name,color:selCatColor,type});
+  }
+  saveData();closeOvl('cat');renderAll();
+  showToast(lang==='es'?'Categoría guardada ✓':'Category saved ✓');
+}
+
+function confirmDeleteCat(){
+  if(!editingCatId)return;
+  const n=assets.filter(a=>a.cat===editingCatId).length;
+  const msg=lang==='es'?`Esta categoría tiene ${n} activo${n!==1?'s':''}. ¿Eliminar todo?`:`This category has ${n} asset${n!==1?'s':''}. Delete all?`;
+  if(n>0&&!confirm(msg))return;
+  assets=assets.filter(a=>a.cat!==editingCatId);
+  userCats=userCats.filter(c=>c.id!==editingCatId);
+  saveData();closeOvl('cat');renderAll();
+  showToast(lang==='es'?'Categoría eliminada':'Category deleted');
+}
+
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function closeOvl(name,e){
   if(e&&e.target!==document.getElementById('ovl-'+name))return;
   document.getElementById('ovl-'+name).classList.remove('on');
   if(name==='asset')editingAssetId=null;
+  if(name==='cat')editingCatId=null;
   if(name==='tx'){editingTxId=null;txAssetId=null;}
 }
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2500);}
