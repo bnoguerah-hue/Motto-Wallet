@@ -257,7 +257,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
     <div id="cryptoF">
       <label id="lbl-search-crypto">Buscar cripto</label>
       <div class="acwrap">
-        <input type="text" id="mCryptoSearch" placeholder="Bitcoin, ETH, Solana..." autocomplete="off" oninput="onSearch('crypto',this.value)" onkeydown="onAcKey('crypto',event)"/>
+        <input type="text" id="mCryptoSearch" placeholder="Bitcoin, BTC, Pepe, DOGE..." autocomplete="off" oninput="onSearch('crypto',this.value)" onkeydown="onAcKey('crypto',event)"/>
         <div class="aclist" id="acListCrypto"></div>
       </div>
       <input type="hidden" id="mCryptoSym"/>
@@ -267,7 +267,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
     <div id="stockF" style="display:none">
       <label id="lbl-search-stock">Buscar acción</label>
       <div class="acwrap">
-        <input type="text" id="mStockSearch" placeholder="AAPL, UUUU, BHP, TSLA..." autocomplete="off" oninput="onSearch('stock',this.value)" onkeydown="onAcKey('stock',event)"/>
+        <input type="text" id="mStockSearch" placeholder="Apple, AAPL, Tesla, UUUU..." autocomplete="off" oninput="onSearch('stock',this.value)" onkeydown="onAcKey('stock',event)"/>
         <div class="aclist" id="acListStock"></div>
       </div>
       <input type="hidden" id="mStockSym"/>
@@ -824,15 +824,25 @@ function onSearch(type,q){
   if(!q.trim()){list.classList.remove('on');return;}
   const ql=q.toLowerCase();
   let matches,html;
-  if(type==='crypto'){matches=COINS.filter(c=>c.sym.toLowerCase().includes(ql)||c.name.toLowerCase().includes(ql)).slice(0,8);html=matches.map(c=>`<div class="acitem" onclick="selectItem('crypto','${c.sym}','${c.name}','')"><span class="acsym">${c.sym}</span><span class="acname">${c.name}</span></div>`).join('');}
+  if(type==='crypto'){
+    matches=COINS.filter(c=>c.sym.toLowerCase().includes(ql)||c.name.toLowerCase().includes(ql)).slice(0,8);
+    html=matches.map(c=>`<div class="acitem" onclick="selectItem('crypto','${c.sym}','${c.name}','')"><span class="acsym">${c.sym}</span><span class="acname">${c.name}</span></div>`).join('');
+    const upperQ=q.trim().toUpperCase();
+    const cleanQ=upperQ.replace(/[^A-Z0-9]/g,'');
+    if(cleanQ&&!matches.find(c=>c.sym===cleanQ)){
+      html+=`<div class="acitem" onclick="selectItem('crypto','${cleanQ}','${q.trim()}','')"><span class="acsym">${cleanQ}</span><span class="acname" style="color:var(--gold)">${lang==='es'?`Agregar "${q.trim()}" como símbolo`:`Add "${q.trim()}" as symbol`}</span></div>`;
+      matches.push({sym:cleanQ});
+    }
+  }
   else{
     matches=STOCKS.filter(s=>s.sym.toLowerCase().includes(ql)||s.name.toLowerCase().includes(ql)).slice(0,8);
     html=matches.map(s=>`<div class="acitem" onclick="selectItem('stock','${s.sym}','${s.name}','${s.ex}')"><span class="acsym">${s.sym}</span><span class="acname">${s.name}</span><span class="acex">${s.ex}</span></div>`).join('');
     // Always add option to use typed ticker directly
     const upperQ=q.trim().toUpperCase();
-    if(upperQ&&!matches.find(s=>s.sym===upperQ)){
-      html+=`<div class="acitem" onclick="selectItem('stock','${upperQ}','${upperQ}','')"><span class="acsym">${upperQ}</span><span class="acname" style="color:var(--gold)">${lang==='es'?'Usar este ticker':'Use this ticker'}</span></div>`;
-      matches.push({sym:upperQ});
+    const cleanQ=upperQ.replace(/[^A-Z0-9.]/g,'');
+    if(cleanQ&&!matches.find(s=>s.sym===cleanQ)){
+      html+=`<div class="acitem" onclick="selectItem('stock','${cleanQ}','${q.trim()}','')"><span class="acsym">${cleanQ}</span><span class="acname" style="color:var(--gold)">${lang==='es'?`Agregar "${q.trim()}" como ticker`:`Add "${q.trim()}" as ticker`}</span></div>`;
+      matches.push({sym:cleanQ});
     }
   }
   if(type==='crypto')acFocusCrypto=-1;else acFocusStock=-1;
@@ -840,8 +850,15 @@ function onSearch(type,q){
 }
 
 function selectItem(type,sym,name,ex){
-  if(type==='crypto'){selCryptoSym=sym;document.getElementById('mCryptoSearch').value=`${sym} — ${name}`;document.getElementById('acListCrypto').classList.remove('on');acFocusCrypto=-1;}
-  else{selStockSym=sym;document.getElementById('mStockSearch').value=`${sym} — ${name}${ex?' ('+ex+')':''}`;document.getElementById('acListStock').classList.remove('on');acFocusStock=-1;}
+  if(type==='crypto'){
+    selCryptoSym=sym;
+    document.getElementById('mCryptoSearch').value=name&&name!==sym?`${sym} — ${name}`:sym;
+    document.getElementById('acListCrypto').classList.remove('on');acFocusCrypto=-1;
+  }else{
+    selStockSym=sym;
+    document.getElementById('mStockSearch').value=name&&name!==sym?`${sym} — ${name}${ex?' ('+ex+')':''}`:sym;
+    document.getElementById('acListStock').classList.remove('on');acFocusStock=-1;
+  }
 }
 
 function onAcKey(type,e){
