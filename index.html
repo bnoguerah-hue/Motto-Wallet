@@ -267,7 +267,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
     <div id="stockF" style="display:none">
       <label id="lbl-search-stock">Buscar acción</label>
       <div class="acwrap">
-        <input type="text" id="mStockSearch" placeholder="Apple, AAPL, ASX:BHP..." autocomplete="off" oninput="onSearch('stock',this.value)" onkeydown="onAcKey('stock',event)"/>
+        <input type="text" id="mStockSearch" placeholder="AAPL, UUUU, BHP, TSLA..." autocomplete="off" oninput="onSearch('stock',this.value)" onkeydown="onAcKey('stock',event)"/>
         <div class="aclist" id="acListStock"></div>
       </div>
       <input type="hidden" id="mStockSym"/>
@@ -825,7 +825,16 @@ function onSearch(type,q){
   const ql=q.toLowerCase();
   let matches,html;
   if(type==='crypto'){matches=COINS.filter(c=>c.sym.toLowerCase().includes(ql)||c.name.toLowerCase().includes(ql)).slice(0,8);html=matches.map(c=>`<div class="acitem" onclick="selectItem('crypto','${c.sym}','${c.name}','')"><span class="acsym">${c.sym}</span><span class="acname">${c.name}</span></div>`).join('');}
-  else{matches=STOCKS.filter(s=>s.sym.toLowerCase().includes(ql)||s.name.toLowerCase().includes(ql)).slice(0,8);html=matches.map(s=>`<div class="acitem" onclick="selectItem('stock','${s.sym}','${s.name}','${s.ex}')"><span class="acsym">${s.sym}</span><span class="acname">${s.name}</span><span class="acex">${s.ex}</span></div>`).join('');}
+  else{
+    matches=STOCKS.filter(s=>s.sym.toLowerCase().includes(ql)||s.name.toLowerCase().includes(ql)).slice(0,8);
+    html=matches.map(s=>`<div class="acitem" onclick="selectItem('stock','${s.sym}','${s.name}','${s.ex}')"><span class="acsym">${s.sym}</span><span class="acname">${s.name}</span><span class="acex">${s.ex}</span></div>`).join('');
+    // Always add option to use typed ticker directly
+    const upperQ=q.trim().toUpperCase();
+    if(upperQ&&!matches.find(s=>s.sym===upperQ)){
+      html+=`<div class="acitem" onclick="selectItem('stock','${upperQ}','${upperQ}','')"><span class="acsym">${upperQ}</span><span class="acname" style="color:var(--gold)">${lang==='es'?'Usar este ticker':'Use this ticker'}</span></div>`;
+      matches.push({sym:upperQ});
+    }
+  }
   if(type==='crypto')acFocusCrypto=-1;else acFocusStock=-1;
   list.innerHTML=html;list.classList.toggle('on',matches.length>0);
 }
