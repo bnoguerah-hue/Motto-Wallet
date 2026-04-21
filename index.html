@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root{--bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;--bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.13);--tx:#f0ede8;--tx2:#888880;--tx3:#555550;--gold:#c9a96e;--gold2:#e8c99a;--gdim:rgba(201,169,110,.12);--grn:#4ade80;--gdim2:rgba(74,222,128,.1);--red:#f87171;--rdim:rgba(248,113,113,.1);--r:12px;--r2:20px}
+:root{--bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;--bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.13);--tx:#f0ede8;--tx2:#888880;--tx3:#555550;--gold:#c9a96e;--gold2:#e8c99a;--gdim:rgba(201,169,110,.12);--grn:#4ade80;--gdim2:rgba(74,222,128,.1);--red:#f87171;--rdim:rgba(248,113,113,.1);--r:12px;--r2:20px;--teal:#22d3ee;--tdim:rgba(34,211,238,.12)}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:14px;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
 .nav{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:rgba(10,10,10,.96);backdrop-filter:blur(20px);border-bottom:.5px solid var(--bd)}
@@ -20,6 +20,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
 .nav-r{display:flex;align-items:center;gap:5px}
 .cb{font-size:11px;font-weight:500;padding:4px 8px;border-radius:99px;border:.5px solid var(--bd2);background:transparent;color:var(--tx2);cursor:pointer;transition:all .15s}
 .cb.on{background:var(--gold);border-color:var(--gold);color:#0a0a0a}
+.cb-teal.on{background:var(--teal);border-color:var(--teal);color:#0a0a0a}
 .nib{width:28px;height:28px;border-radius:50%;border:.5px solid var(--bd2);background:transparent;color:var(--tx2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
 .nib:hover{background:var(--bg3);color:var(--tx)}
 .spin{animation:spin 1s linear infinite}
@@ -32,6 +33,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
 .pg.on{display:block}
 .hero{background:linear-gradient(135deg,#1a1508 0%,#111 60%);border:.5px solid rgba(201,169,110,.2);border-radius:var(--r2);padding:22px 18px 18px;margin-bottom:14px;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(201,169,110,.07) 0%,transparent 70%);pointer-events:none}
+.hero-b{background:linear-gradient(135deg,#051a1f 0%,#111 60%);border-color:rgba(34,211,238,.2);}
+.hero-b::before{background:radial-gradient(circle,rgba(34,211,238,.07) 0%,transparent 70%);}
 .hlabel{font-size:10px;font-weight:500;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
 .hval{font-family:'DM Serif Display',serif;font-size:36px;color:var(--tx);letter-spacing:-2px;line-height:1;margin-bottom:5px}
 .hsub{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:6px}
@@ -147,7 +150,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
 .tx-pct{font-size:10px;margin-top:1px}
 .profile-card{background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--r2);padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
 .avatar{width:44px;height:44px;border-radius:50%;background:var(--gdim);border:.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);flex-shrink:0}
-.export-btn{margin-left:auto;font-size:11px;padding:6px 12px;border-radius:99px;border:.5px solid var(--bd2);background:transparent;color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.export-btn{font-size:11px;padding:6px 12px;border-radius:99px;border:.5px solid var(--bd2);background:transparent;color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
 .export-btn:hover{border-color:var(--gold);color:var(--gold)}
 .swatch{width:22px;height:22px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
 .swatch.on{border-color:white;transform:scale(1.15)}
@@ -170,6 +173,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
 
 <div class="tabs">
   <div class="tab on" onclick="showPg('home')">Resumen</div>
+  <div class="tab" onclick="showPg('bienes')" id="tab-bienes">Bienes</div>
   <div class="tab" onclick="showPg('assets')">Activos</div>
   <div class="tab" onclick="showPg('analytics')">Analytics</div>
   <div class="tab" onclick="showPg('profile')">Perfil</div>
@@ -180,7 +184,10 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
   <div class="pg on" id="pg-home">
     <div style="padding-top:6px"></div>
     <div class="hero">
-      <div class="hlabel" id="lbl-total">Patrimonio total</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px">
+        <div class="hlabel" style="margin-bottom:0" id="lbl-total">Patrimonio total</div>
+        <button id="bienesFullBtn" onclick="toggleBienesFull()" style="font-size:11px;font-weight:500;padding:4px 12px;border-radius:99px;border:1px solid var(--teal);background:rgba(34,211,238,.12);color:var(--teal);cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0">+ Secundarios</button>
+      </div>
       <div class="hval" id="hTotal">—</div>
       <div class="hsub"><span class="ldot"></span><span id="hSub">Cargando...</span></div>
       <div class="hmet">
@@ -192,6 +199,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
     <div class="abar" id="abar"></div>
     <div class="aleg" id="aleg"></div>
     <div id="goalCard"></div>
+    <div id="cryptoPnlBanner"></div>
     <div class="sec">
       <div class="sh"><span class="st" id="lbl-dist">Distribución</span><button class="abtn" id="distToggleBtn" onclick="toggleDistChart()">≡ Barras</button></div>
       <div class="cc">
@@ -203,6 +211,34 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
       </div>
     </div>
     <div id="homeSecs"></div>
+  </div>
+
+  <div class="pg" id="pg-bienes">
+    <div style="padding-top:6px"></div>
+    <div class="hero hero-b">
+      <div class="hlabel" id="b-lbl-total">Bienes físicos</div>
+      <div class="hval" id="bTotal">—</div>
+      <div class="hsub"><span class="ldot" style="background:var(--teal)"></span><span id="bSub">Calculando...</span></div>
+      <div class="hmet">
+        <div class="hm"><div class="hml">Bienes</div><div class="hmv neu" id="bCount">—</div></div>
+        <div class="hm"><div class="hml">Del patrimonio</div><div class="hmv neu" id="bPct">—</div></div>
+        <div class="hm"><div class="hml">Total global</div><div class="hmv neu" id="bAllTotal">—</div></div>
+      </div>
+    </div>
+    <div class="abar" id="babar"></div>
+    <div class="aleg" id="baleg"></div>
+    <div id="bgoalCard"></div>
+    <div class="sec">
+      <div class="sh"><span class="st">Distribución</span><button class="abtn" id="bdistToggleBtn" onclick="toggleBienesDistChart()">≡ Barras</button></div>
+      <div class="cc">
+        <div class="dcwrap cw h200" id="bdistWrap">
+          <canvas id="bdonut"></canvas>
+          <div class="dcc" id="bdcc"><div class="dccv" id="bdccv">—</div><div class="dccl">BIENES</div></div>
+        </div>
+        <div id="bdonutLeg" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px"></div>
+      </div>
+    </div>
+    <div id="bSecs"></div>
   </div>
 
   <div class="pg" id="pg-assets">
@@ -241,7 +277,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
         <div style="font-size:14px;font-weight:500;color:var(--tx)">MOTTØ Wallet</div>
         <div style="font-size:11px;color:var(--tx3);margin-top:2px" id="profileSub">Datos guardados en este dispositivo</div>
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
+      <div style="display:flex;gap:6px;flex-shrink:0;margin-left:auto">
         <button class="export-btn" onclick="importData()" id="importBtn">Importar</button>
         <button class="export-btn" onclick="exportData()" id="exportBtn">Exportar</button>
       </div>
@@ -304,6 +340,9 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
       <input type="text" id="mName" placeholder="ej: Depto Santiago, Cuenta BCI..."/>
       <label id="lbl-value-cur">Valor en AUD</label>
       <input type="number" id="mVal" placeholder="10000" step="any" min="0"/>
+    </div>
+    <div style="margin:10px 0 4px">
+      <button type="button" id="secundarioBtn" onclick="toggleModalSecundario()" style="width:100%;padding:8px;border-radius:var(--r);border:.5px solid var(--bd2);background:transparent;color:var(--tx3);font-size:11px;cursor:pointer;transition:all .2s;text-align:left">○ &nbsp;Bienes Secundario <span style="color:var(--tx3);font-size:10px">(oculto del Resumen normal)</span></button>
     </div>
     <div class="mbtns">
       <button class="mbtn mbtn-c" id="cancelAssetBtn" onclick="closeOvl('asset')">Cancelar</button>
@@ -441,6 +480,10 @@ const DEFAULT_CATS=[
   {id:'stocks',es:'Acciones',en:'Stocks',color:'#60a5fa',type:'stock'},
   {id:'cash',es:'Banco / Efectivo',en:'Bank / Cash',color:'#4ade80',type:'manual'},
   {id:'other',es:'Otros activos',en:'Other assets',color:'#f87171',type:'manual'},
+  {id:'vehicles',es:'Vehículos',en:'Vehicles',color:'#22d3ee',type:'physical'},
+  {id:'property',es:'Inmuebles',en:'Property',color:'#a78bfa',type:'physical'},
+  {id:'electronics',es:'Electrónica',en:'Electronics',color:'#fb923c',type:'physical'},
+  {id:'goods',es:'Otros bienes',en:'Other goods',color:'#94a3b8',type:'physical'},
 ];
 let userCats=[];
 function getCats(){return userCats.map(c=>({...c,name:c[lang]||c.es||c.name}));}
@@ -456,11 +499,13 @@ let lang='es';
 let goal={targetUSD:null,targetDate:null,name:''};
 let distChartType='donut';
 let isCustomStock=false;
+let bienesFullActive=false;
+let modalSecundario=false;
 
 // ── TRANSLATIONS ────────────────────────────────────────────────────────────
 const TR={
   es:{total:'Patrimonio total',best:'Mejor',worst:'Peor',dist:'Distribución',
-    assets:'Activos',analytics:'Analytics',profile:'Perfil',summary:'Resumen',
+    assets:'Activos',analytics:'Analytics',profile:'Perfil',summary:'Resumen',bienes:'Bienes',
     add:'+ Agregar',noAssets:'Sin activos',category:'Categoría',amount:'Cantidad',
     save:'Guardar',update:'Actualizar',cancel:'Cancelar',deleteAsset:'Eliminar activo',
     searchCrypto:'Buscar cripto',searchStock:'Buscar acción',shares:'Cantidad de acciones',
@@ -478,7 +523,7 @@ const TR={
     autoRefresh:'auto cada 45s',
   },
   en:{total:'Total net worth',best:'Best',worst:'Worst',dist:'Distribution',
-    assets:'Assets',analytics:'Analytics',profile:'Profile',summary:'Overview',
+    assets:'Assets',analytics:'Analytics',profile:'Profile',summary:'Overview',bienes:'Assets',
     add:'+ Add',noAssets:'No assets',category:'Category',amount:'Amount',
     save:'Save',update:'Update',cancel:'Cancel',deleteAsset:'Delete asset',
     searchCrypto:'Search crypto',searchStock:'Search stock',shares:'Number of shares',
@@ -505,9 +550,10 @@ function toggleLang(){
 function applyTranslations(){
   const tabs=document.querySelectorAll('.tab');
   if(tabs[0])tabs[0].textContent=t('summary');
-  if(tabs[1])tabs[1].textContent=t('assets');
-  if(tabs[2])tabs[2].textContent=t('analytics');
-  if(tabs[3])tabs[3].textContent=t('profile');
+  if(tabs[1])tabs[1].textContent=t('bienes');
+  if(tabs[2])tabs[2].textContent=t('assets');
+  if(tabs[3])tabs[3].textContent=t('analytics');
+  if(tabs[4])tabs[4].textContent=t('profile');
   const ids={
     'lbl-total':'total','lbl-best':'best','lbl-worst':'worst','lbl-dist':'dist',
     'lbl-by-cat':'byCat','lbl-composition':'composition','lbl-winners':'winners','lbl-losers':'losers',
@@ -523,6 +569,7 @@ function applyTranslations(){
   const cancelAsset=document.getElementById('cancelAssetBtn');if(cancelAsset)cancelAsset.textContent=t('cancel');
   const cancelTx=document.getElementById('cancelTxBtn');if(cancelTx)cancelTx.textContent=t('cancel');
   const exportBtn=document.getElementById('exportBtn');if(exportBtn)exportBtn.textContent=t('export');
+  const importBtn=document.getElementById('importBtn');if(importBtn)importBtn.textContent=lang==='es'?'Importar':'Import';
   const mcs=document.getElementById('mCryptoSearch');if(mcs)mcs.placeholder=lang==='es'?'Bitcoin, ETH, Solana...':'Bitcoin, ETH, Solana...';
   const mss=document.getElementById('mStockSearch');if(mss)mss.placeholder=lang==='es'?'Apple, AAPL, ASX:BHP...':'Apple, AAPL, ASX:BHP...';
   const mn=document.getElementById('mName');if(mn)mn.placeholder=lang==='es'?'ej: Depto Santiago, Cuenta BCI...':'e.g. Apartment, Bank account...';
@@ -630,15 +677,67 @@ async function fetchPrices(manual=false){
   if(el)el.textContent=`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} · ${t('autoRefresh')}`;
 }
 
+// ── HELPERS FINANCIERO / FÍSICO ──────────────────────────────────────────────
+function getFinancialCats(){return getCats().filter(c=>c.type!=='physical');}
+function getPhysicalCats(){return getCats().filter(c=>c.type==='physical');}
+function getFinancialAssets(){return assets.filter(a=>getCat(a)?.type!=='physical');}
+function getPhysicalAssets(){return assets.filter(a=>getCat(a)?.type==='physical');}
+function getResumenAssets(){const f=getFinancialAssets();return bienesFullActive?f:f.filter(a=>!a.secundario);}
+
+function toggleBienesFull(){
+  bienesFullActive=!bienesFullActive;
+  const btn=document.getElementById('bienesFullBtn');
+  if(btn){
+    if(bienesFullActive){
+      btn.style.background='var(--teal)';btn.style.borderColor='var(--teal)';btn.style.color='#0a0a0a';btn.textContent='✓ Secundarios ON';
+    }else{
+      btn.style.background='rgba(34,211,238,.12)';btn.style.borderColor='var(--teal)';btn.style.color='var(--teal)';btn.textContent='+ Secundarios';
+    }
+  }
+  renderAll();
+}
+
+function toggleModalSecundario(){
+  modalSecundario=!modalSecundario;
+  const btn=document.getElementById('secundarioBtn');
+  if(!btn)return;
+  if(modalSecundario){
+    btn.style.background='var(--tdim)';btn.style.borderColor='var(--teal)';btn.style.color='var(--teal)';
+    btn.innerHTML='◉ &nbsp;Bienes Secundario <span style="color:var(--teal);font-size:10px">(oculto del Resumen normal)</span>';
+  }else{
+    btn.style.background='transparent';btn.style.borderColor='var(--bd2)';btn.style.color='var(--tx3)';
+    btn.innerHTML='○ &nbsp;Bienes Secundario <span style="color:var(--tx3);font-size:10px">(oculto del Resumen normal)</span>';
+  }
+}
+
+function setModalSecundarioState(val){
+  modalSecundario=val;
+  const btn=document.getElementById('secundarioBtn');
+  if(!btn)return;
+  if(val){
+    btn.style.background='var(--tdim)';btn.style.borderColor='var(--teal)';btn.style.color='var(--teal)';
+    btn.innerHTML='◉ &nbsp;Bienes Secundario <span style="color:var(--teal);font-size:10px">(oculto del Resumen normal)</span>';
+  }else{
+    btn.style.background='transparent';btn.style.borderColor='var(--bd2)';btn.style.color='var(--tx3)';
+    btn.innerHTML='○ &nbsp;Bienes Secundario <span style="color:var(--tx3);font-size:10px">(oculto del Resumen normal)</span>';
+  }
+}
+
 // ── RENDER ───────────────────────────────────────────────────────────────────
 function renderAll(){
   applyTranslations();
-  const total=assets.reduce((s,a)=>s+getValUSD(a),0);
-  renderHero(total);renderAllocBar(total);renderDonut(total);
-  renderGoal(total);renderHomeSecs();renderAssetPage();renderAnalytics(total);
+  const finAssets=getFinancialAssets();
+  const physAssets=getPhysicalAssets();
+  const resAs=getResumenAssets();
+  const finTotal=resAs.reduce((s,a)=>s+getValUSD(a),0);
+  const physTotal=physAssets.reduce((s,a)=>s+getValUSD(a),0);
+  const allTotal=getFinancialAssets().reduce((s,a)=>s+getValUSD(a),0)+physTotal;
+  renderHero(finTotal);renderAllocBar(finTotal);renderDonut(finTotal);
+  renderGoal(finTotal);renderHomeSecs();renderCryptoPnl();
+  renderBienes(physTotal,allTotal);
+  renderAssetPage();renderAnalytics(allTotal);
   if(currentDetailAssetId)renderDetail(currentDetailAssetId);
   renderCatList();
-  // update profile sub
   const sub=document.getElementById('profileSub');
   if(sub)sub.textContent=`${assets.length} ${lang==='es'?'activos guardados':'saved assets'}`;
 }
@@ -646,7 +745,7 @@ function renderAll(){
 function renderHero(total){
   document.getElementById('hTotal').textContent=fmt(total);
   document.getElementById('dccv').textContent=fmt(total);
-  const liveAs=assets.filter(a=>{const c=getCat(a);return(c?.type==='crypto'&&cryptoPrices[a.sym?.toUpperCase()])||(c?.type==='stock'&&stockPrices[a.sym?.toUpperCase()]);});
+  const liveAs=getResumenAssets().filter(a=>{const c=getCat(a);return(c?.type==='crypto'&&cryptoPrices[a.sym?.toUpperCase()])||(c?.type==='stock'&&stockPrices[a.sym?.toUpperCase()]);});
   let pnl=0,best=null,worst=null,bestChg=-Infinity,worstChg=Infinity;
   liveAs.forEach(a=>{
     const chg=getChange(a)||0,v=getValUSD(a);
@@ -662,31 +761,33 @@ function renderHero(total){
 }
 
 function renderAllocBar(total){
-  document.getElementById('abar').innerHTML=getCats().map(c=>{const v=assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="aseg" style="width:${total?(v/total*100).toFixed(1):0}%;background:${c.color}"></div>`;}).join('');
-  document.getElementById('aleg').innerHTML=getCats().map(c=>{const v=assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="ai"><div class="ad" style="background:${c.color}"></div>${c.name} <strong style="color:var(--tx)">${total?(v/total*100).toFixed(0):0}%</strong> <span style="color:var(--tx2)">${fmt(v)}</span></div>`;}).join('');
+  const finCats=getFinancialCats();const resAs=getResumenAssets();
+  document.getElementById('abar').innerHTML=finCats.map(c=>{const v=resAs.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="aseg" style="width:${total?(v/total*100).toFixed(1):0}%;background:${c.color}"></div>`;}).join('');
+  document.getElementById('aleg').innerHTML=finCats.map(c=>{const v=resAs.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="ai"><div class="ad" style="background:${c.color}"></div>${c.name} <strong style="color:var(--tx)">${total?(v/total*100).toFixed(0):0}%</strong> <span style="color:var(--tx2)">${fmt(v)}</span></div>`;}).join('');
 }
 
 function renderDonut(total){
-  const vals=getCats().map(c=>assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a)*rates[cur],0));
+  const finCats=getFinancialCats();const resAs=getResumenAssets();
+  const vals=finCats.map(c=>resAs.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a)*rates[cur],0));
   const ctx=document.getElementById('donut').getContext('2d');
   if(charts.donut)charts.donut.destroy();
   const center=document.getElementById('donutCenter');
   const s={USD:'$',AUD:'A$',CLP:'$',EUR:'€'}[cur];
   if(distChartType==='donut'){
     if(center)center.style.display='';
-    charts.donut=new Chart(ctx,{type:'doughnut',data:{labels:getCats().map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:getCats().map(c=>c.color),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(vals[ctx.dataIndex]/rates[cur])}}},cutout:'70%'}});
+    charts.donut=new Chart(ctx,{type:'doughnut',data:{labels:finCats.map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:finCats.map(c=>c.color),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(vals[ctx.dataIndex]/rates[cur])}}},cutout:'70%'}});
   }else{
     if(center)center.style.display='none';
-    charts.donut=new Chart(ctx,{type:'bar',data:{labels:getCats().map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:getCats().map(c=>c.color),borderRadius:6,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${s}${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:'#555550',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#555550',font:{size:10},callback:v=>s+v.toLocaleString()}}}}});
+    charts.donut=new Chart(ctx,{type:'bar',data:{labels:finCats.map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:finCats.map(c=>c.color),borderRadius:6,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${s}${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:'#555550',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#555550',font:{size:10},callback:v=>s+v.toLocaleString()}}}}});
   }
-  document.getElementById('donutLeg').innerHTML=getCats().map(c=>`<div class="ai"><div class="ad" style="background:${c.color}"></div><span style="color:var(--tx2)">${c.name}</span></div>`).join('');
+  document.getElementById('donutLeg').innerHTML=finCats.map(c=>`<div class="ai"><div class="ad" style="background:${c.color}"></div><span style="color:var(--tx2)">${c.name}</span></div>`).join('');
 }
 
 function toggleDistChart(){
   distChartType=distChartType==='donut'?'bar':'donut';
   const btn=document.getElementById('distToggleBtn');
   if(btn)btn.textContent=distChartType==='donut'?(lang==='es'?'≡ Barras':'≡ Bar'):(lang==='es'?'◎ Dona':'◎ Donut');
-  const total=assets.reduce((s,a)=>s+getValUSD(a),0);
+  const total=getResumenAssets().reduce((s,a)=>s+getValUSD(a),0);
   renderDonut(total);
 }
 
@@ -767,11 +868,132 @@ function makeRow(a){
 }
 
 function renderHomeSecs(){
-  document.getElementById('homeSecs').innerHTML=getCats().map(c=>`<div class="sec"><div class="sh"><span class="st">${c.name}</span><button class="abtn" onclick="openAddAsset('${c.id}')">${t('add')}</button></div>${assets.filter(a=>a.cat===c.id).slice(0,3).map(a=>makeRow(a)).join('')||`<div class="empty">${t('noAssets')}</div>`}</div>`).join('');
+  const finCats=getFinancialCats();const resAs=getResumenAssets();
+  document.getElementById('homeSecs').innerHTML=finCats.map(c=>`<div class="sec"><div class="sh"><span class="st">${c.name}</span><button class="abtn" onclick="openAddAsset('${c.id}')">${t('add')}</button></div>${resAs.filter(a=>a.cat===c.id).slice(0,3).map(a=>makeRow(a)).join('')||`<div class="empty">${t('noAssets')}</div>`}</div>`).join('');
+}
+
+function renderCryptoPnl(){
+  const el=document.getElementById('cryptoPnlBanner');
+  if(!el)return;
+  const cryptoAs=getResumenAssets().filter(a=>getCat(a)?.type==='crypto');
+  let totalCost=0,totalCurrent=0,count=0;
+  cryptoAs.forEach(a=>{
+    const txs=transactions.filter(tx=>tx.assetId===a.id&&tx.type==='buy');
+    if(!txs.length)return;
+    txs.forEach(tx=>{totalCost+=tx.qty*tx.priceUSD;});
+    const sells=transactions.filter(tx=>tx.assetId===a.id&&tx.type==='sell');
+    sells.forEach(tx=>{totalCost-=tx.qty*tx.priceUSD;});
+    totalCurrent+=getValUSD(a);
+    count++;
+  });
+  if(!count){el.innerHTML='';return;}
+  const pnl=totalCurrent-totalCost;
+  const pct=totalCost>0?(pnl/totalCost*100):0;
+  const pos=pnl>=0;
+  const arrow=pos?'▲':'▼';
+  const cls=pos?'pos':'neg';
+  const bgCol=pos?'rgba(74,222,128,.07)':'rgba(248,113,113,.07)';
+  const bdCol=pos?'rgba(74,222,128,.18)':'rgba(248,113,113,.18)';
+  el.innerHTML=`<div style="background:${bgCol};border:.5px solid ${bdCol};border-radius:var(--r);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-size:10px;font-weight:500;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px">${lang==='es'?'Cripto · P&L desde compra':'Crypto · P&L since purchase'}</div>
+      <div style="font-size:11px;color:var(--tx2)">${count} ${lang==='es'?'activo'+(count!==1?'s':''):'asset'+(count!==1?'s':'')} · ${lang==='es'?'invertido':'invested'} ${fmt(totalCost)}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:18px;font-weight:500;color:var(--${pos?'grn':'red'})">${pos?'+':''}${fmt(pnl)}</div>
+      <div style="font-size:11px;color:var(--${pos?'grn':'red'})">${arrow} ${Math.abs(pct).toFixed(1)}%</div>
+    </div>
+  </div>`;
 }
 
 function renderAssetPage(){
   document.getElementById('assetSecs').innerHTML=getCats().map(c=>`<div class="sec"><div class="sh"><span class="st">${c.name}</span><button class="abtn" onclick="openAddAsset('${c.id}')">${t('add')}</button></div>${assets.filter(a=>a.cat===c.id).map(a=>makeRow(a)).join('')||`<div class="empty">${t('noAssets')}</div>`}</div>`).join('');
+}
+
+// ── BIENES ───────────────────────────────────────────────────────────────────
+let bdistChartType='donut';
+
+function renderBienes(physTotal,allTotal){
+  renderBienesHero(physTotal,allTotal);
+  renderBienesAllocBar(physTotal);
+  renderBienesDonut(physTotal);
+  renderBienesGoal(allTotal);
+  renderBienesSecs();
+}
+
+function renderBienesHero(physTotal,allTotal){
+  document.getElementById('bTotal').textContent=fmt(physTotal);
+  document.getElementById('bdccv').textContent=fmt(physTotal);
+  const count=getPhysicalAssets().length;
+  document.getElementById('bCount').textContent=count;
+  document.getElementById('bPct').textContent=allTotal?(physTotal/allTotal*100).toFixed(0)+'%':'—';
+  document.getElementById('bAllTotal').textContent=fmt(allTotal);
+  document.getElementById('bSub').textContent=`${count} ${lang==='es'?(count!==1?'bienes':'bien'):(count!==1?'assets':'asset')} registrados`;
+}
+
+function renderBienesAllocBar(physTotal){
+  const physCats=getPhysicalCats();const physAs=getPhysicalAssets();
+  document.getElementById('babar').innerHTML=physCats.map(c=>{const v=physAs.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="aseg" style="width:${physTotal?(v/physTotal*100).toFixed(1):0}%;background:${c.color}"></div>`;}).join('');
+  document.getElementById('baleg').innerHTML=physCats.map(c=>{const v=physAs.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a),0);return`<div class="ai"><div class="ad" style="background:${c.color}"></div>${c.name} <strong style="color:var(--tx)">${physTotal?(v/physTotal*100).toFixed(0):0}%</strong> <span style="color:var(--tx2)">${fmt(v)}</span></div>`;}).join('');
+}
+
+function renderBienesDonut(physTotal){
+  const physCats=getPhysicalCats();const physAs=getPhysicalAssets();
+  const vals=physCats.map(c=>physAs.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a)*rates[cur],0));
+  const ctx=document.getElementById('bdonut').getContext('2d');
+  if(charts.bdonut)charts.bdonut.destroy();
+  const bdcc=document.getElementById('bdcc');
+  const s={USD:'$',AUD:'A$',CLP:'$',EUR:'€'}[cur];
+  if(bdistChartType==='donut'){
+    if(bdcc)bdcc.style.display='';
+    charts.bdonut=new Chart(ctx,{type:'doughnut',data:{labels:physCats.map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:physCats.map(c=>c.color),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(vals[ctx.dataIndex]/rates[cur])}}},cutout:'70%'}});
+  }else{
+    if(bdcc)bdcc.style.display='none';
+    charts.bdonut=new Chart(ctx,{type:'bar',data:{labels:physCats.map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:physCats.map(c=>c.color),borderRadius:6,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${s}${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:'#555550',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#555550',font:{size:10},callback:v=>s+v.toLocaleString()}}}}});
+  }
+  document.getElementById('bdonutLeg').innerHTML=physCats.map(c=>`<div class="ai"><div class="ad" style="background:${c.color}"></div><span style="color:var(--tx2)">${c.name}</span></div>`).join('');
+}
+
+function toggleBienesDistChart(){
+  bdistChartType=bdistChartType==='donut'?'bar':'donut';
+  const btn=document.getElementById('bdistToggleBtn');
+  if(btn)btn.textContent=bdistChartType==='donut'?(lang==='es'?'≡ Barras':'≡ Bar'):(lang==='es'?'◎ Dona':'◎ Donut');
+  const physTotal=getPhysicalAssets().reduce((s,a)=>s+getValUSD(a),0);
+  renderBienesDonut(physTotal);
+}
+
+function renderBienesGoal(allTotal){
+  const el=document.getElementById('bgoalCard');
+  if(!goal.targetUSD||!goal.targetDate){
+    el.innerHTML=`<div style="margin-bottom:14px"><button class="abtn" onclick="openGoalModal()" style="font-size:11px">+ ${lang==='es'?'Configurar objetivo':'Set goal'}</button></div>`;
+    return;
+  }
+  const pct=Math.min(allTotal/goal.targetUSD*100,100);
+  const remaining=Math.max(goal.targetUSD-allTotal,0);
+  const now=new Date();const target=new Date(goal.targetDate+'T00:00:00');
+  const msPerMonth=1000*60*60*24*30.44;
+  const monthsLeft=Math.max((target-now)/msPerMonth,0);
+  const neededPerMonth=monthsLeft>0?remaining/monthsLeft:null;
+  const label=goal.name||(lang==='es'?'Mi objetivo':'My goal');
+  const done=remaining<=0;
+  el.innerHTML=`<div class="goal-card" style="border-color:rgba(34,211,238,.2);background:linear-gradient(135deg,#051a1f 0%,#111 60%)">
+    <div class="goal-label"><span>${label}</span><button style="font-size:10px;padding:2px 8px;border-radius:99px;border:.5px solid var(--bd2);background:transparent;color:var(--tx3);cursor:pointer" onclick="openGoalModal()">Editar</button></div>
+    <div class="goal-target">${fmt(goal.targetUSD)}</div>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:4px">${lang==='es'?'Incluye activos financieros + bienes físicos':'Includes financial + physical assets'}</div>
+    <div class="goal-bar-wrap"><div class="goal-bar-fill" style="width:${pct.toFixed(1)}%;background:var(--teal)"></div></div>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:8px">${fmt(allTotal)} de ${fmt(goal.targetUSD)} · ${pct.toFixed(1)}%</div>
+    ${done?`<div style="font-size:13px;font-weight:500;color:var(--teal)">🎯 ${lang==='es'?'¡Objetivo alcanzado!':'Goal reached!'}</div>`:`
+    <div class="goal-stats">
+      <div class="goal-stat"><div class="goal-stat-l">${lang==='es'?'Falta':'Remaining'}</div><div class="goal-stat-v ${remaining>0?'neg':''}">${fmt(remaining)}</div></div>
+      <div class="goal-stat"><div class="goal-stat-l">${lang==='es'?'Meses rest.':'Months left'}</div><div class="goal-stat-v">${monthsLeft.toFixed(1)}</div></div>
+      <div class="goal-stat"><div class="goal-stat-l">${lang==='es'?'Necesito/mes':'Need/month'}</div><div class="goal-stat-v ${neededPerMonth>0?'neg':''}">${neededPerMonth!==null?fmt(neededPerMonth):'—'}</div></div>
+    </div>`}
+  </div>`;
+}
+
+function renderBienesSecs(){
+  const physCats=getPhysicalCats();const physAs=getPhysicalAssets();
+  document.getElementById('bSecs').innerHTML=physCats.map(c=>`<div class="sec"><div class="sh"><span class="st">${c.name}</span><button class="abtn" onclick="openAddAsset('${c.id}')">${t('add')}</button></div>${physAs.filter(a=>a.cat===c.id).map(a=>makeRow(a)).join('')||`<div class="empty">${t('noAssets')}</div>`}</div>`).join('');
 }
 
 // ── DETAIL ───────────────────────────────────────────────────────────────────
@@ -812,7 +1034,7 @@ function renderDetail(id){
     <div class="sec"><div class="sh"><span class="st">${lang==='es'?'Transacciones':'Transactions'}</span><button class="abtn" onclick="openAddTx('${a.id}')">${t('newTx')}</button></div>${txHtml}</div>`;
 }
 
-function backFromDetail(){currentDetailAssetId=null;document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));document.getElementById('pg-assets').classList.add('on');document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',i===1));}
+function backFromDetail(){currentDetailAssetId=null;document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));document.getElementById('pg-assets').classList.add('on');document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',i===2));}
 
 // ── ANALYTICS ────────────────────────────────────────────────────────────────
 function renderAnalytics(total){
@@ -862,7 +1084,7 @@ function showPg(name){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('pg-'+name).classList.add('on');
-  document.querySelectorAll('.tab')[{home:0,assets:1,analytics:2,profile:3}[name]].classList.add('on');
+  document.querySelectorAll('.tab')[{home:0,bienes:1,assets:2,analytics:3,profile:4}[name]].classList.add('on');
   currentDetailAssetId=null;
   if(name==='analytics')renderAll();
 }
@@ -881,6 +1103,7 @@ function openAddAsset(catId){
   const spLbl=document.getElementById('lbl-stock-price');if(spLbl)spLbl.textContent=`${t('stockPrice')} (${cur})`;
   document.getElementById('deleteAssetRow').style.display='none';
   document.getElementById('saveAssetBtn').textContent=t('save');
+  setModalSecundarioState(false);
   buildCatTabs(modalCatId);
   document.getElementById('ovl-asset').classList.add('on');
 }
@@ -904,6 +1127,7 @@ function openEditAsset(id){
     if(isCustomStock)document.getElementById('mStockName').value=a.name||'';
   }
   else{document.getElementById('mName').value=a.name||'';const valLbl=document.getElementById('lbl-value-cur');if(valLbl)valLbl.textContent=`${t('valueCur')} ${cur}`;document.getElementById('mVal').value=a.valUSD?parseFloat((a.valUSD*rates[cur]).toFixed(2)):'';}
+  setModalSecundarioState(!!a.secundario);
   document.getElementById('ovl-asset').classList.add('on');
 }
 
@@ -950,6 +1174,7 @@ function saveAsset(){
     if(isNaN(val)){showToast(lang==='es'?'Ingresa un valor':'Enter a value');return;}
     newAsset={...newAsset,name,valUSD:val/rates[cur]};
   }
+  newAsset.secundario=modalSecundario;
   if(editingAssetId){assets=assets.map(a=>a.id===editingAssetId?{...a,...newAsset}:a);showToast(lang==='es'?'Activo actualizado ✓':'Asset updated ✓');}
   else{assets.push(newAsset);showToast(lang==='es'?'Activo agregado ✓':'Asset added ✓');}
   saveData();closeOvl('asset');fetchPrices(false);
