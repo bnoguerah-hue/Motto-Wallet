@@ -241,10 +241,14 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
         <div style="font-size:14px;font-weight:500;color:var(--tx)">MOTTØ Wallet</div>
         <div style="font-size:11px;color:var(--tx3);margin-top:2px" id="profileSub">Datos guardados en este dispositivo</div>
       </div>
-      <button class="export-btn" onclick="exportData()" id="exportBtn">Exportar</button>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="export-btn" onclick="importData()" id="importBtn">Importar</button>
+        <button class="export-btn" onclick="exportData()" id="exportBtn">Exportar</button>
+      </div>
     </div>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)"/>
     <div style="font-size:12px;color:var(--tx3);line-height:1.8;padding:4px 0 16px">
-      <span id="lbl-storage-info">Tus datos se guardan directamente en este dispositivo. Para tener tus datos en otro dispositivo usa el botón Exportar.</span>
+      <span id="lbl-storage-info">Tus datos se guardan en este dispositivo. Exporta desde Safari e importa en la app del home screen para sincronizar.</span>
     </div>
     <div class="sec">
       <div class="sh"><span class="st" id="lbl-goal-section">Mi objetivo</span><button class="abtn" onclick="openGoalModal()" id="goalEditBtn">+ Configurar</button></div>
@@ -1073,12 +1077,39 @@ function confirmDeleteTx(){
 
 // ── PROFILE ACTIONS ───────────────────────────────────────────────────────────
 function exportData(){
-  const data={assets,transactions,exportDate:new Date().toISOString()};
+  const data={assets,transactions,cats:userCats,goal,exportDate:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download='motto-wallet-backup.json';a.click();
   URL.revokeObjectURL(url);
   showToast(lang==='es'?'Datos exportados ✓':'Data exported ✓');
+}
+
+function importData(){
+  document.getElementById('importFile').value='';
+  document.getElementById('importFile').click();
+}
+
+function handleImport(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.assets)throw new Error('Formato inválido');
+      const msg=lang==='es'
+        ?`Importar ${data.assets.length} activos y ${(data.transactions||[]).length} transacciones? Se reemplazarán los datos actuales.`
+        :`Import ${data.assets.length} assets and ${(data.transactions||[]).length} transactions? Current data will be replaced.`;
+      if(!confirm(msg))return;
+      assets=data.assets||[];
+      transactions=data.transactions||[];
+      if(data.cats&&data.cats.length)userCats=data.cats;
+      if(data.goal)goal=data.goal;
+      saveData();renderAll();
+      showToast(lang==='es'?'Datos importados ✓':'Data imported ✓');
+    }catch(err){showToast(lang==='es'?'Error al importar el archivo':'Error importing file');}
+  };
+  reader.readAsText(file);
 }
 
 function clearAllData(){
