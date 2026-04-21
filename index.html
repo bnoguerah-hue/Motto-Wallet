@@ -64,14 +64,6 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
 .goal-stat{background:rgba(255,255,255,.03);border:.5px solid var(--bd);border-radius:var(--r);padding:7px 9px}
 .goal-stat-l{font-size:10px;color:var(--tx3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:2px}
 .goal-stat-v{font-size:12px;font-weight:500}
-.bnb-card{background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--r);padding:13px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
-.bnb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.bnb-dot.on{background:var(--grn);box-shadow:0 0 6px rgba(74,222,128,.5)}
-.bnb-dot.off{background:var(--tx3)}
-.bnb-info{flex:1;min-width:0}
-.bnb-title{font-size:13px;font-weight:500;color:var(--tx)}
-.bnb-sub{font-size:11px;color:var(--tx3);margin-top:1px}
-.warn-box{background:rgba(248,113,113,.08);border:.5px solid rgba(248,113,113,.3);border-radius:var(--r);padding:10px 12px;font-size:11px;color:#fca5a5;line-height:1.6;margin-top:12px}
 .aic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
 .ainf{flex:1;min-width:0}
 .an{font-size:13px;font-weight:500;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -167,8 +159,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
 <nav class="nav">
   <div class="logo">MOTT<span class="sl">Ø</span><span class="logo-sub">wallet</span></div>
   <div class="nav-r">
-    <button class="cb on" onclick="setCur('USD')">USD</button>
-    <button class="cb" onclick="setCur('AUD')">AUD</button>
+    <button class="cb" onclick="setCur('USD')">USD</button>
+    <button class="cb on" onclick="setCur('AUD')">AUD</button>
     <button class="cb" onclick="setCur('CLP')">CLP</button>
     <button class="cb" onclick="setCur('EUR')">EUR</button>
     <button class="cb" id="langBtn" onclick="toggleLang()">ES</button>
@@ -201,11 +193,11 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
     <div class="aleg" id="aleg"></div>
     <div id="goalCard"></div>
     <div class="sec">
-      <div class="sh"><span class="st" id="lbl-dist">Distribución</span></div>
+      <div class="sh"><span class="st" id="lbl-dist">Distribución</span><button class="abtn" id="distToggleBtn" onclick="toggleDistChart()">≡ Barras</button></div>
       <div class="cc">
-        <div class="dcwrap cw h200">
+        <div class="dcwrap cw h200" id="distWrap">
           <canvas id="donut"></canvas>
-          <div class="dcc"><div class="dccv" id="dccv">—</div><div class="dccl">TOTAL</div></div>
+          <div class="dcc" id="donutCenter"><div class="dccv" id="dccv">—</div><div class="dccl">TOTAL</div></div>
         </div>
         <div id="donutLeg" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px"></div>
       </div>
@@ -255,10 +247,6 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
       <span id="lbl-storage-info">Tus datos se guardan directamente en este dispositivo. Para tener tus datos en otro dispositivo usa el botón Exportar.</span>
     </div>
     <div class="sec">
-      <div class="sh"><span class="st">Binance</span><button class="abtn" id="bnbConnBtn" onclick="openBinanceModal()">Conectar</button></div>
-      <div id="bnbStatus"></div>
-    </div>
-    <div class="sec">
       <div class="sh"><span class="st" id="lbl-goal-section">Mi objetivo</span><button class="abtn" onclick="openGoalModal()" id="goalEditBtn">+ Configurar</button></div>
       <div id="profileGoalInfo" style="font-size:12px;color:var(--tx3);padding:4px 0 8px">Sin objetivo configurado.</div>
     </div>
@@ -298,15 +286,19 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
         <div class="aclist" id="acListStock"></div>
       </div>
       <input type="hidden" id="mStockSym"/>
+      <div id="stockCustomNameRow" style="display:none">
+        <label id="lbl-stock-custom-name">Nombre de la acción</label>
+        <input type="text" id="mStockName" placeholder="ej: Tesla, ETF Emergentes..."/>
+      </div>
       <label id="lbl-shares">Cantidad de acciones</label>
       <input type="number" id="mStockQty" placeholder="10" step="any" min="0"/>
-      <label id="lbl-stock-price">Precio actual por acción (USD)</label>
+      <label id="lbl-stock-price">Precio por acción (USD)</label>
       <input type="number" id="mStockPrice" placeholder="150.00" step="any" min="0"/>
     </div>
     <div id="manualF" style="display:none">
       <label id="lbl-asset-name">Nombre del activo</label>
       <input type="text" id="mName" placeholder="ej: Depto Santiago, Cuenta BCI..."/>
-      <label id="lbl-value-usd">Valor en USD</label>
+      <label id="lbl-value-cur">Valor en AUD</label>
       <input type="number" id="mVal" placeholder="10000" step="any" min="0"/>
     </div>
     <div class="mbtns">
@@ -374,32 +366,12 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
   </div>
 </div>
 
-<!-- BINANCE MODAL -->
-<div class="ovl" id="ovl-bnb" onclick="closeOvl('bnb',event)">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhandle"></div>
-    <div class="mtitle">Conectar Binance</div>
-    <div class="warn-box">⚠️ <strong>Usa solo API Keys de solo lectura.</strong> Activa únicamente el permiso "Enable Reading". Nunca actives permisos de retiro ni de trading. MOTTØ solo lee tus saldos, nunca mueve fondos.</div>
-    <label style="margin-top:14px">API Key</label>
-    <input type="text" id="bnbApiKey" placeholder="Pega tu API Key aquí" autocomplete="off"/>
-    <label>Secret Key</label>
-    <input type="password" id="bnbSecretKey" placeholder="Pega tu Secret Key aquí" autocomplete="off"/>
-    <div class="mbtns">
-      <button class="mbtn mbtn-c" onclick="closeOvl('bnb')">Cancelar</button>
-      <button class="mbtn mbtn-s" id="bnbSaveBtn" onclick="saveBinanceKeys()">Conectar y sincronizar</button>
-    </div>
-    <div id="bnbDisconnectRow" style="display:none;margin-top:8px">
-      <button class="mbtn mbtn-d" style="width:100%" onclick="disconnectBinance()">Desconectar Binance</button>
-    </div>
-  </div>
-</div>
-
 <!-- GOAL MODAL -->
 <div class="ovl" id="ovl-goal" onclick="closeOvl('goal',event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="mhandle"></div>
     <div class="mtitle">Mi objetivo financiero</div>
-    <label>Meta (en USD)</label>
+    <label id="goalAmountLabel">Meta (en AUD)</label>
     <input type="number" id="goalAmount" placeholder="100000" step="any" min="0"/>
     <label>Fecha límite</label>
     <input type="date" id="goalDate"/>
@@ -470,7 +442,7 @@ let userCats=[];
 function getCats(){return userCats.map(c=>({...c,name:c[lang]||c.es||c.name}));}
 
 // ── STATE ───────────────────────────────────────────────────────────────────
-let cur='USD',rates={USD:1,AUD:1.55,CLP:950,EUR:0.92};
+let cur='AUD',rates={USD:1,AUD:1.55,CLP:950,EUR:0.92};
 let cryptoPrices={},stockPrices={};
 let assets=[],transactions=[];
 let editingAssetId=null,editingTxId=null,txAssetId=null,modalCatId='crypto';
@@ -478,7 +450,8 @@ let selCryptoSym='',selStockSym='',acFocusCrypto=-1,acFocusStock=-1;
 let charts={},autoTimer=null,currentDetailAssetId=null;
 let lang='es';
 let goal={targetUSD:null,targetDate:null,name:''};
-let bnb={apiKey:'',secretKey:'',connected:false};
+let distChartType='donut';
+let isCustomStock=false;
 
 // ── TRANSLATIONS ────────────────────────────────────────────────────────────
 const TR={
@@ -487,7 +460,7 @@ const TR={
     add:'+ Agregar',noAssets:'Sin activos',category:'Categoría',amount:'Cantidad',
     save:'Guardar',update:'Actualizar',cancel:'Cancelar',deleteAsset:'Eliminar activo',
     searchCrypto:'Buscar cripto',searchStock:'Buscar acción',shares:'Cantidad de acciones',
-    stockPrice:'Precio actual por acción (USD)',assetName:'Nombre del activo',valueUSD:'Valor en USD',
+    stockPrice:'Precio por acción (USD)',stockCustomName:'Nombre de la acción',assetName:'Nombre del activo',valueCur:'Valor en',
     txType:'Tipo',txQty:'Cantidad',txPrice:'Precio por unidad (USD)',txDate:'Fecha',txNotes:'Notas (opcional)',
     buy:'Compra',sell:'Venta',newTx:'+ Nueva',noTx:'Sin transacciones',deleteTx:'Eliminar transacción',
     byCat:'Por categoría',composition:'Composición',winners:'Ganadores 24h',losers:'Perdedores 24h',
@@ -505,7 +478,7 @@ const TR={
     add:'+ Add',noAssets:'No assets',category:'Category',amount:'Amount',
     save:'Save',update:'Update',cancel:'Cancel',deleteAsset:'Delete asset',
     searchCrypto:'Search crypto',searchStock:'Search stock',shares:'Number of shares',
-    stockPrice:'Current price per share (USD)',assetName:'Asset name',valueUSD:'Value in USD',
+    stockPrice:'Price per share (USD)',stockCustomName:'Stock name',assetName:'Asset name',valueCur:'Value in',
     txType:'Type',txQty:'Amount',txPrice:'Price per unit (USD)',txDate:'Date',txNotes:'Notes (optional)',
     buy:'Buy',sell:'Sell',newTx:'+ New',noTx:'No transactions',deleteTx:'Delete transaction',
     byCat:'By category',composition:'Composition',winners:'Top gainers 24h',losers:'Top losers 24h',
@@ -537,7 +510,7 @@ function applyTranslations(){
     'lbl-an-total':'total','lbl-live':'live','lbl-in-crypto':'inCrypto','lbl-portfolio':'portfolio',
     'lbl-assets-count':'assetsCount','lbl-category':'category','lbl-search-crypto':'searchCrypto',
     'lbl-amount':'amount','lbl-search-stock':'searchStock','lbl-shares':'shares',
-    'lbl-stock-price':'stockPrice','lbl-asset-name':'assetName','lbl-value-usd':'valueUSD',
+    'lbl-stock-price':'stockPrice','lbl-stock-custom-name':'stockCustomName','lbl-asset-name':'assetName',
     'lbl-tx-type':'txType','lbl-tx-qty':'txQty','lbl-tx-price':'txPrice',
     'lbl-tx-date':'txDate','lbl-tx-notes':'txNotes','lbl-storage-info':'storageInfo',
     'lbl-danger':'danger',
@@ -549,6 +522,7 @@ function applyTranslations(){
   const mcs=document.getElementById('mCryptoSearch');if(mcs)mcs.placeholder=lang==='es'?'Bitcoin, ETH, Solana...':'Bitcoin, ETH, Solana...';
   const mss=document.getElementById('mStockSearch');if(mss)mss.placeholder=lang==='es'?'Apple, AAPL, ASX:BHP...':'Apple, AAPL, ASX:BHP...';
   const mn=document.getElementById('mName');if(mn)mn.placeholder=lang==='es'?'ej: Depto Santiago, Cuenta BCI...':'e.g. Apartment, Bank account...';
+  const valCurLbl=document.getElementById('lbl-value-cur');if(valCurLbl)valCurLbl.textContent=`${t('valueCur')} ${cur}`;
   // Update live timestamp text
   const hSubEl=document.getElementById('hSub');
   if(hSubEl&&hSubEl.textContent.includes(':')){
@@ -575,16 +549,14 @@ function saveData(){
   localStorage.setItem('motto_cur',cur);
   localStorage.setItem('motto_lang',lang);
   localStorage.setItem('motto_goal',JSON.stringify(goal));
-  localStorage.setItem('motto_bnb',JSON.stringify(bnb));
 }
 function loadData(){
   try{assets=JSON.parse(localStorage.getItem('motto_assets'))||[];}catch(e){assets=[];}
   try{transactions=JSON.parse(localStorage.getItem('motto_transactions'))||[];}catch(e){transactions=[];}
   try{userCats=JSON.parse(localStorage.getItem('motto_cats'))||[];}catch(e){userCats=[];}
   try{goal=JSON.parse(localStorage.getItem('motto_goal'))||{targetUSD:null,targetDate:null,name:''};}catch(e){goal={targetUSD:null,targetDate:null,name:''};}
-  try{bnb=JSON.parse(localStorage.getItem('motto_bnb'))||{apiKey:'',secretKey:'',connected:false};}catch(e){bnb={apiKey:'',secretKey:'',connected:false};}
   if(!userCats.length)userCats=JSON.parse(JSON.stringify(DEFAULT_CATS));
-  cur=localStorage.getItem('motto_cur')||'USD';
+  cur=localStorage.getItem('motto_cur')||'AUD';
   lang=localStorage.getItem('motto_lang')||'es';
   document.querySelectorAll('.cb').forEach(b=>{if(['USD','AUD','CLP','EUR'].includes(b.textContent))b.classList.toggle('on',b.textContent===cur);});
   document.getElementById('langBtn').textContent=lang==='es'?'ES':'EN';
@@ -643,7 +615,6 @@ async function fetchPrices(manual=false){
   for(const a of sAs){
     try{const r=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${a.sym}?interval=1d&range=2d`);const d=await r.json();const price=d?.chart?.result?.[0]?.meta?.regularMarketPrice;const prev=d?.chart?.result?.[0]?.meta?.chartPreviousClose;if(price)stockPrices[a.sym.toUpperCase()]={usd:price,change:prev?((price-prev)/prev*100):0};}catch(e){}
   }
-  if(bnb.apiKey&&bnb.secretKey)await fetchBinanceBalances();
   rb.classList.remove('spin');
   renderAll();
   if(manual)showToast(lang==='es'?'Precios actualizados ✓':'Prices updated ✓');
@@ -659,7 +630,7 @@ function renderAll(){
   applyTranslations();
   const total=assets.reduce((s,a)=>s+getValUSD(a),0);
   renderHero(total);renderAllocBar(total);renderDonut(total);
-  renderGoal(total);renderBinanceStatus();renderHomeSecs();renderAssetPage();renderAnalytics(total);
+  renderGoal(total);renderHomeSecs();renderAssetPage();renderAnalytics(total);
   if(currentDetailAssetId)renderDetail(currentDetailAssetId);
   renderCatList();
   // update profile sub
@@ -694,8 +665,24 @@ function renderDonut(total){
   const vals=getCats().map(c=>assets.filter(a=>a.cat===c.id).reduce((s,a)=>s+getValUSD(a)*rates[cur],0));
   const ctx=document.getElementById('donut').getContext('2d');
   if(charts.donut)charts.donut.destroy();
-  charts.donut=new Chart(ctx,{type:'doughnut',data:{labels:getCats().map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:getCats().map(c=>c.color),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(vals[ctx.dataIndex]/rates[cur])}}},cutout:'70%'}});
+  const center=document.getElementById('donutCenter');
+  const s={USD:'$',AUD:'A$',CLP:'$',EUR:'€'}[cur];
+  if(distChartType==='donut'){
+    if(center)center.style.display='';
+    charts.donut=new Chart(ctx,{type:'doughnut',data:{labels:getCats().map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:getCats().map(c=>c.color),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(vals[ctx.dataIndex]/rates[cur])}}},cutout:'70%'}});
+  }else{
+    if(center)center.style.display='none';
+    charts.donut=new Chart(ctx,{type:'bar',data:{labels:getCats().map(c=>c.name),datasets:[{data:vals.map(v=>parseFloat(v.toFixed(0))),backgroundColor:getCats().map(c=>c.color),borderRadius:6,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${s}${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:'#555550',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#555550',font:{size:10},callback:v=>s+v.toLocaleString()}}}}});
+  }
   document.getElementById('donutLeg').innerHTML=getCats().map(c=>`<div class="ai"><div class="ad" style="background:${c.color}"></div><span style="color:var(--tx2)">${c.name}</span></div>`).join('');
+}
+
+function toggleDistChart(){
+  distChartType=distChartType==='donut'?'bar':'donut';
+  const btn=document.getElementById('distToggleBtn');
+  if(btn)btn.textContent=distChartType==='donut'?(lang==='es'?'≡ Barras':'≡ Bar'):(lang==='es'?'◎ Dona':'◎ Donut');
+  const total=assets.reduce((s,a)=>s+getValUSD(a),0);
+  renderDonut(total);
 }
 
 // ── GOAL ─────────────────────────────────────────────────────────────────────
@@ -735,7 +722,9 @@ function renderGoal(totalUSD){
 }
 
 function openGoalModal(){
-  if(goal.targetUSD)document.getElementById('goalAmount').value=goal.targetUSD;
+  const s={USD:'$',AUD:'A$',CLP:'$',EUR:'€'}[cur];
+  document.getElementById('goalAmountLabel').textContent=`Meta (en ${cur})`;
+  if(goal.targetUSD)document.getElementById('goalAmount').value=parseFloat((goal.targetUSD*rates[cur]).toFixed(2));
   if(goal.targetDate)document.getElementById('goalDate').value=goal.targetDate;
   document.getElementById('goalName').value=goal.name||'';
   document.getElementById('deleteGoalRow').style.display=goal.targetUSD?'block':'none';
@@ -747,7 +736,7 @@ function saveGoal(){
   const date=document.getElementById('goalDate').value;
   const name=document.getElementById('goalName').value.trim();
   if(!amt||amt<=0||!date){showToast(lang==='es'?'Ingresa monto y fecha':'Enter amount and date');return;}
-  goal={targetUSD:amt,targetDate:date,name};
+  goal={targetUSD:amt/rates[cur],targetDate:date,name};
   saveData();closeOvl('goal');renderAll();
   showToast(lang==='es'?'Objetivo guardado ✓':'Goal saved ✓');
 }
@@ -764,10 +753,9 @@ function makeRow(a){
   const chg=getChange(a);
   const chHtml=chg!==null?`<span class="ach ${chg>=0?'pos':'neg'}">${chg>=0?'▲':'▼'}${Math.abs(chg).toFixed(2)}%</span>`:'';
   const txCount=transactions.filter(tx=>tx.assetId===a.id).length;
-  const bnbTag=a.fromBinance?` · <span style="color:var(--gold);font-size:10px">Binance</span>`:'';
   return`<div class="arow" onclick="openDetail('${a.id}')">
     <div class="aic" style="background:${col}22;color:${col}">${ic}</div>
-    <div class="ainf"><div class="an">${a.name}</div><div class="as2">${a.sym?a.sym+(a.qty?` · ${a.qty}`:''):(cat?.name||'')}${txCount?` · ${txCount} tx`:''}${bnbTag}</div></div>
+    <div class="ainf"><div class="an">${a.name}</div><div class="as2">${a.sym?a.sym+(a.qty?` · ${a.qty}`:''):(cat?.name||'')}${txCount?` · ${txCount} tx`:''}</div></div>
     <div class="ar"><div class="av">${val?fmt(val):'—'}</div>${chHtml}</div>
     <div class="aacts" onclick="event.stopPropagation()"><button class="ib" onclick="openEditAsset('${a.id}')">✎</button></div>
   </div>`;
@@ -883,6 +871,8 @@ function openAddAsset(catId){
   document.getElementById('mStockSearch').value='';document.getElementById('mStockSym').value='';
   document.getElementById('mQty').value='';document.getElementById('mStockQty').value='';
   document.getElementById('mStockPrice').value='';document.getElementById('mName').value='';document.getElementById('mVal').value='';
+  isCustomStock=false;document.getElementById('stockCustomNameRow').style.display='none';document.getElementById('mStockName').value='';
+  const valLbl=document.getElementById('lbl-value-cur');if(valLbl)valLbl.textContent=`${t('valueCur')} ${cur}`;
   document.getElementById('deleteAssetRow').style.display='none';
   document.getElementById('saveAssetBtn').textContent=t('save');
   buildCatTabs(modalCatId);
@@ -896,11 +886,18 @@ function openEditAsset(id){
   document.getElementById('deleteAssetRow').style.display='block';
   document.getElementById('saveAssetBtn').textContent=t('update');
   document.getElementById('deleteAssetBtn').textContent=t('deleteAsset');
-  const cat=getCat(a);selCryptoSym='';selStockSym='';
+  const cat=getCat(a);selCryptoSym='';selStockSym='';isCustomStock=false;
   buildCatTabs(a.cat);
   if(cat?.type==='crypto'){const coin=COINS.find(c=>c.sym===a.sym);document.getElementById('mCryptoSearch').value=coin?`${coin.sym} — ${coin.name}`:(a.sym||'');document.getElementById('mCryptoSym').value=a.sym||'';document.getElementById('mQty').value=a.qty||'';selCryptoSym=a.sym||'';}
-  else if(cat?.type==='stock'){const stk=STOCKS.find(s=>s.sym===a.sym);document.getElementById('mStockSearch').value=stk?`${stk.sym} — ${stk.name}`:(a.sym||'');document.getElementById('mStockSym').value=a.sym||'';document.getElementById('mStockQty').value=a.qty||'';document.getElementById('mStockPrice').value=a.priceUSD||'';selStockSym=a.sym||'';}
-  else{document.getElementById('mName').value=a.name||'';document.getElementById('mVal').value=a.valUSD||'';}
+  else if(cat?.type==='stock'){
+    const stk=STOCKS.find(s=>s.sym===a.sym);
+    isCustomStock=!stk;
+    document.getElementById('mStockSearch').value=stk?`${stk.sym} — ${stk.name}`:(a.sym||'');
+    document.getElementById('mStockSym').value=a.sym||'';document.getElementById('mStockQty').value=a.qty||'';document.getElementById('mStockPrice').value=a.priceUSD||'';selStockSym=a.sym||'';
+    const cnRow=document.getElementById('stockCustomNameRow');if(cnRow)cnRow.style.display=isCustomStock?'block':'none';
+    if(isCustomStock)document.getElementById('mStockName').value=a.name||'';
+  }
+  else{document.getElementById('mName').value=a.name||'';const valLbl=document.getElementById('lbl-value-cur');if(valLbl)valLbl.textContent=`${t('valueCur')} ${cur}`;document.getElementById('mVal').value=a.valUSD?parseFloat((a.valUSD*rates[cur]).toFixed(2)):'';}
   document.getElementById('ovl-asset').classList.add('on');
 }
 
@@ -917,6 +914,7 @@ function updateModalFields(){
   document.getElementById('cryptoF').style.display=cat?.type==='crypto'?'block':'none';
   document.getElementById('stockF').style.display=cat?.type==='stock'?'block':'none';
   document.getElementById('manualF').style.display=cat?.type==='manual'?'block':'none';
+  if(cat?.type==='manual'){const lbl=document.getElementById('lbl-value-cur');if(lbl)lbl.textContent=`${t('valueCur')} ${cur}`;}
 }
 
 function saveAsset(){
@@ -932,14 +930,17 @@ function saveAsset(){
     if(!selStockSym){showToast(lang==='es'?'Selecciona una acción':'Select a stock');return;}
     const qty=parseFloat(document.getElementById('mStockQty').value)||0;
     const price=parseFloat(document.getElementById('mStockPrice').value)||null;
-    const stk=STOCKS.find(s=>s.sym===selStockSym)||{sym:selStockSym,name:selStockSym};
-    newAsset={...newAsset,name:stk.name,sym:selStockSym,qty,priceUSD:price};
+    const stk=STOCKS.find(s=>s.sym===selStockSym);
+    const customName=isCustomStock?document.getElementById('mStockName').value.trim():null;
+    if(isCustomStock&&!customName){showToast(lang==='es'?'Ingresa el nombre de la acción':'Enter the stock name');return;}
+    const assetName=customName||(stk?stk.name:selStockSym);
+    newAsset={...newAsset,name:assetName,sym:selStockSym,qty,priceUSD:price};
   }else{
     const name=document.getElementById('mName').value.trim();
     const val=parseFloat(document.getElementById('mVal').value);
     if(!name){showToast(lang==='es'?'Ingresa un nombre':'Enter a name');return;}
     if(isNaN(val)){showToast(lang==='es'?'Ingresa un valor':'Enter a value');return;}
-    newAsset={...newAsset,name,valUSD:val};
+    newAsset={...newAsset,name,valUSD:val/rates[cur]};
   }
   if(editingAssetId){assets=assets.map(a=>a.id===editingAssetId?{...a,...newAsset}:a);showToast(lang==='es'?'Activo actualizado ✓':'Asset updated ✓');}
   else{assets.push(newAsset);showToast(lang==='es'?'Activo agregado ✓':'Asset added ✓');}
@@ -994,6 +995,9 @@ function selectItem(type,sym,name,ex){
     selStockSym=sym;
     document.getElementById('mStockSearch').value=name&&name!==sym?`${sym} — ${name}${ex?' ('+ex+')':''}`:sym;
     document.getElementById('acListStock').classList.remove('on');acFocusStock=-1;
+    isCustomStock=!STOCKS.some(s=>s.sym===sym);
+    const cnRow=document.getElementById('stockCustomNameRow');if(cnRow)cnRow.style.display=isCustomStock?'block':'none';
+    if(isCustomStock){const nm=document.getElementById('mStockName');if(nm)nm.value=name&&name!==sym?name:'';}
   }
 }
 
@@ -1150,99 +1154,6 @@ function confirmDeleteCat(){
   userCats=userCats.filter(c=>c.id!==editingCatId);
   saveData();closeOvl('cat');renderAll();
   showToast(lang==='es'?'Categoría eliminada':'Category deleted');
-}
-
-// ── BINANCE ───────────────────────────────────────────────────────────────────
-async function hmacSHA256(secret,message){
-  const enc=new TextEncoder();
-  const key=await crypto.subtle.importKey('raw',enc.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
-  const sig=await crypto.subtle.sign('HMAC',key,enc.encode(message));
-  return Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-async function fetchBinanceBalances(){
-  if(!bnb.apiKey||!bnb.secretKey)return false;
-  try{
-    const ts=Date.now();
-    const qs=`timestamp=${ts}`;
-    const sig=await hmacSHA256(bnb.secretKey,qs);
-    const r=await fetch(`https://api.binance.com/api/v3/account?${qs}&signature=${sig}`,{headers:{'X-MBX-APIKEY':bnb.apiKey}});
-    if(!r.ok){const err=await r.json().catch(()=>({msg:r.status}));throw new Error(err.msg||r.status);}
-    const d=await r.json();
-    const nonZero=d.balances.filter(b=>parseFloat(b.free)+parseFloat(b.locked)>0.000001);
-    const cryptoCat=getCats().find(c=>c.type==='crypto');
-    if(!cryptoCat)return false;
-    // Update or insert Binance assets
-    nonZero.forEach(b=>{
-      const sym=b.asset;
-      const qty=parseFloat(b.free)+parseFloat(b.locked);
-      const existing=assets.find(a=>a.fromBinance&&a.sym===sym&&a.cat===cryptoCat.id);
-      if(existing){existing.qty=qty;}
-      else{
-        const same=assets.find(a=>a.sym===sym&&a.cat===cryptoCat.id);
-        if(same){same.qty=qty;same.fromBinance=true;}
-        else{
-          const coin=COINS.find(c=>c.sym===sym)||{sym,name:sym};
-          assets.push({id:'bnb_'+sym,cat:cryptoCat.id,name:coin.name,sym,qty,fromBinance:true});
-        }
-      }
-    });
-    // Remove stale Binance assets no longer in account
-    const activeSyms=nonZero.map(b=>b.asset);
-    assets=assets.filter(a=>!a.fromBinance||activeSyms.includes(a.sym));
-    bnb.connected=true;
-    saveData();
-    return true;
-  }catch(e){
-    bnb.connected=false;
-    saveData();
-    showToast('Binance error: '+e.message);
-    return false;
-  }
-}
-
-function renderBinanceStatus(){
-  const el=document.getElementById('bnbStatus');
-  const btn=document.getElementById('bnbConnBtn');
-  if(!el)return;
-  if(bnb.connected&&bnb.apiKey){
-    const masked=bnb.apiKey.slice(0,6)+'••••••••'+bnb.apiKey.slice(-4);
-    const bnbAssets=assets.filter(a=>a.fromBinance);
-    el.innerHTML=`<div class="bnb-card"><div class="bnb-dot on"></div><div class="bnb-info"><div class="bnb-title">Conectado</div><div class="bnb-sub">${masked} · ${bnbAssets.length} activo${bnbAssets.length!==1?'s':''} importado${bnbAssets.length!==1?'s':''}</div></div></div>`;
-    if(btn)btn.textContent='Editar';
-  }else if(bnb.apiKey){
-    el.innerHTML=`<div class="bnb-card"><div class="bnb-dot off"></div><div class="bnb-info"><div class="bnb-title">Sin conexión</div><div class="bnb-sub">API Key guardada, sin datos recientes</div></div></div>`;
-    if(btn)btn.textContent='Reconectar';
-  }else{
-    el.innerHTML=`<div style="font-size:12px;color:var(--tx3);padding:4px 0">Sin conectar. Importa tus saldos automáticamente.</div>`;
-    if(btn)btn.textContent='Conectar';
-  }
-}
-
-function openBinanceModal(){
-  document.getElementById('bnbApiKey').value=bnb.apiKey||'';
-  document.getElementById('bnbSecretKey').value='';
-  document.getElementById('bnbDisconnectRow').style.display=bnb.apiKey?'block':'none';
-  document.getElementById('ovl-bnb').classList.add('on');
-}
-
-async function saveBinanceKeys(){
-  const apiKey=document.getElementById('bnbApiKey').value.trim();
-  const secretKey=document.getElementById('bnbSecretKey').value.trim();
-  if(!apiKey||!secretKey){showToast('Ingresa API Key y Secret Key');return;}
-  const btn=document.getElementById('bnbSaveBtn');
-  btn.textContent='Conectando...';btn.disabled=true;
-  bnb.apiKey=apiKey;bnb.secretKey=secretKey;
-  const ok=await fetchBinanceBalances();
-  btn.textContent='Conectar y sincronizar';btn.disabled=false;
-  if(ok){closeOvl('bnb');renderBinanceStatus();renderAll();showToast('Binance conectado ✓');}
-}
-
-function disconnectBinance(){
-  assets=assets.filter(a=>!a.fromBinance);
-  bnb={apiKey:'',secretKey:'',connected:false};
-  saveData();closeOvl('bnb');renderBinanceStatus();renderAll();
-  showToast('Binance desconectado');
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
