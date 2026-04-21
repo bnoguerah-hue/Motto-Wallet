@@ -292,7 +292,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans'
       </div>
       <label id="lbl-shares">Cantidad de acciones</label>
       <input type="number" id="mStockQty" placeholder="10" step="any" min="0"/>
-      <label id="lbl-stock-price">Precio por acción (USD)</label>
+      <label id="lbl-stock-price">Precio por acción (AUD)</label>
       <input type="number" id="mStockPrice" placeholder="150.00" step="any" min="0"/>
     </div>
     <div id="manualF" style="display:none">
@@ -460,7 +460,7 @@ const TR={
     add:'+ Agregar',noAssets:'Sin activos',category:'Categoría',amount:'Cantidad',
     save:'Guardar',update:'Actualizar',cancel:'Cancelar',deleteAsset:'Eliminar activo',
     searchCrypto:'Buscar cripto',searchStock:'Buscar acción',shares:'Cantidad de acciones',
-    stockPrice:'Precio por acción (USD)',stockCustomName:'Nombre de la acción',assetName:'Nombre del activo',valueCur:'Valor en',
+    stockPrice:'Precio por acción',stockCustomName:'Nombre de la acción',assetName:'Nombre del activo',valueCur:'Valor en',
     txType:'Tipo',txQty:'Cantidad',txPrice:'Precio por unidad (USD)',txDate:'Fecha',txNotes:'Notas (opcional)',
     buy:'Compra',sell:'Venta',newTx:'+ Nueva',noTx:'Sin transacciones',deleteTx:'Eliminar transacción',
     byCat:'Por categoría',composition:'Composición',winners:'Ganadores 24h',losers:'Perdedores 24h',
@@ -478,7 +478,7 @@ const TR={
     add:'+ Add',noAssets:'No assets',category:'Category',amount:'Amount',
     save:'Save',update:'Update',cancel:'Cancel',deleteAsset:'Delete asset',
     searchCrypto:'Search crypto',searchStock:'Search stock',shares:'Number of shares',
-    stockPrice:'Price per share (USD)',stockCustomName:'Stock name',assetName:'Asset name',valueCur:'Value in',
+    stockPrice:'Price per share',stockCustomName:'Stock name',assetName:'Asset name',valueCur:'Value in',
     txType:'Type',txQty:'Amount',txPrice:'Price per unit (USD)',txDate:'Date',txNotes:'Notes (optional)',
     buy:'Buy',sell:'Sell',newTx:'+ New',noTx:'No transactions',deleteTx:'Delete transaction',
     byCat:'By category',composition:'Composition',winners:'Top gainers 24h',losers:'Top losers 24h',
@@ -523,6 +523,7 @@ function applyTranslations(){
   const mss=document.getElementById('mStockSearch');if(mss)mss.placeholder=lang==='es'?'Apple, AAPL, ASX:BHP...':'Apple, AAPL, ASX:BHP...';
   const mn=document.getElementById('mName');if(mn)mn.placeholder=lang==='es'?'ej: Depto Santiago, Cuenta BCI...':'e.g. Apartment, Bank account...';
   const valCurLbl=document.getElementById('lbl-value-cur');if(valCurLbl)valCurLbl.textContent=`${t('valueCur')} ${cur}`;
+  const stockPriceLbl=document.getElementById('lbl-stock-price');if(stockPriceLbl)stockPriceLbl.textContent=`${t('stockPrice')} (${cur})`;
   // Update live timestamp text
   const hSubEl=document.getElementById('hSub');
   if(hSubEl&&hSubEl.textContent.includes(':')){
@@ -873,6 +874,7 @@ function openAddAsset(catId){
   document.getElementById('mStockPrice').value='';document.getElementById('mName').value='';document.getElementById('mVal').value='';
   isCustomStock=false;document.getElementById('stockCustomNameRow').style.display='none';document.getElementById('mStockName').value='';
   const valLbl=document.getElementById('lbl-value-cur');if(valLbl)valLbl.textContent=`${t('valueCur')} ${cur}`;
+  const spLbl=document.getElementById('lbl-stock-price');if(spLbl)spLbl.textContent=`${t('stockPrice')} (${cur})`;
   document.getElementById('deleteAssetRow').style.display='none';
   document.getElementById('saveAssetBtn').textContent=t('save');
   buildCatTabs(modalCatId);
@@ -893,7 +895,7 @@ function openEditAsset(id){
     const stk=STOCKS.find(s=>s.sym===a.sym);
     isCustomStock=!stk;
     document.getElementById('mStockSearch').value=stk?`${stk.sym} — ${stk.name}`:(a.sym||'');
-    document.getElementById('mStockSym').value=a.sym||'';document.getElementById('mStockQty').value=a.qty||'';document.getElementById('mStockPrice').value=a.priceUSD||'';selStockSym=a.sym||'';
+    document.getElementById('mStockSym').value=a.sym||'';document.getElementById('mStockQty').value=a.qty||'';document.getElementById('mStockPrice').value=a.priceUSD?parseFloat((a.priceUSD*rates[cur]).toFixed(4)):'';selStockSym=a.sym||'';
     const cnRow=document.getElementById('stockCustomNameRow');if(cnRow)cnRow.style.display=isCustomStock?'block':'none';
     if(isCustomStock)document.getElementById('mStockName').value=a.name||'';
   }
@@ -915,6 +917,7 @@ function updateModalFields(){
   document.getElementById('stockF').style.display=cat?.type==='stock'?'block':'none';
   document.getElementById('manualF').style.display=cat?.type==='manual'?'block':'none';
   if(cat?.type==='manual'){const lbl=document.getElementById('lbl-value-cur');if(lbl)lbl.textContent=`${t('valueCur')} ${cur}`;}
+  if(cat?.type==='stock'){const lbl=document.getElementById('lbl-stock-price');if(lbl)lbl.textContent=`${t('stockPrice')} (${cur})`;}
 }
 
 function saveAsset(){
@@ -929,7 +932,8 @@ function saveAsset(){
   }else if(cat.type==='stock'){
     if(!selStockSym){showToast(lang==='es'?'Selecciona una acción':'Select a stock');return;}
     const qty=parseFloat(document.getElementById('mStockQty').value)||0;
-    const price=parseFloat(document.getElementById('mStockPrice').value)||null;
+    const priceRaw=parseFloat(document.getElementById('mStockPrice').value)||null;
+    const price=priceRaw?priceRaw/rates[cur]:null;
     const stk=STOCKS.find(s=>s.sym===selStockSym);
     const customName=isCustomStock?document.getElementById('mStockName').value.trim():null;
     if(isCustomStock&&!customName){showToast(lang==='es'?'Ingresa el nombre de la acción':'Enter the stock name');return;}
